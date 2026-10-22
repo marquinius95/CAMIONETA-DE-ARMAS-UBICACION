@@ -3,10 +3,9 @@ import json
 from datetime import datetime, timezone
 
 def obtener_ubicacion_real():
-    # Nuevas fuentes activas de la comunidad para la Gun Van
     urls_a_probar = [
         "https://raw.githubusercontent.com/gta-tools/gunvan/main/gunvan.json",
-        "https://gta-api.site/api/v1/gunvan", # Endpoint alternativo de la comunidad
+        "https://gta-api.site/api/v1/gunvan"
     ]
     
     headers = {
@@ -20,7 +19,6 @@ def obtener_ubicacion_real():
             with urllib.request.urlopen(req, timeout=10) as response:
                 data = json.loads(response.read().decode())
                 
-                # Adaptamos según la estructura que devuelva la API activa
                 if 'location' in data:
                     loc = data['location']
                     zone_name = loc.get('name', 'Ubicación actual')
@@ -33,7 +31,6 @@ def obtener_ubicacion_real():
                 else:
                     continue
 
-                # Conversión matemática para el mapa de 4096x4096px
                 if abs(raw_y) <= 4000 and abs(raw_x) <= 4000:
                     lat = int(1600 + (raw_y / 3800.0) * 1600.0)
                     lng = int(2048 + (raw_x / 3800.0) * 2048.0)
@@ -52,7 +49,6 @@ def obtener_ubicacion_real():
             print(f"Fallo al consultar {url}: {e}")
             continue
             
-    # Si todo falla, imprimimos aviso pero mantenemos estructura
     print("Aviso: No se pudo conectar a las APIs externas. Se mantiene la última ubicación.")
     return None
 
