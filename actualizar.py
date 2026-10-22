@@ -31,10 +31,12 @@ def obtener_ubicacion_real():
                 else:
                     continue
 
-                # Conversión matemática adaptada al mapa de 4096 x 4096
-                lat = int(2048 - (raw_y / 4000) * 2048)
+                # CORRECCIÓN DE COORDENADAS: Usamos suma (+) para que el mapa oriente 
+                # correctamente el norte hacia arriba y el este hacia la derecha en 4096x4096px
+                lat = int(2048 + (raw_y / 4000) * 2048)
                 lng = int(2048 + (raw_x / 4000) * 2048)
 
+                # Si los valores ya vienen normalizados en escala 0-4096
                 if 0 <= raw_y <= 4096 and 0 <= raw_x <= 4096:
                     lat = int(raw_y)
                     lng = int(raw_x)
@@ -62,4 +64,4 @@ if __name__ == "__main__":
     datos_nuevos = obtener_ubicacion_real()
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
-    print("¡Sincronizado en HD correctamente!")
+    print("¡Sincronizado con coordenadas corregidas!")
