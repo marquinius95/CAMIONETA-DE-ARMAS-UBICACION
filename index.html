@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTA Gun Van Tracker</title>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; text-align: center; padding: 20px; margin: 0; }
+        .container { max-width: 400px; margin: auto; padding-top: 20px; }
+        .card { background: #1e1e1e; border-radius: 12px; padding: 20px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: left; }
+        h1 { color: #ff9800; font-size: 20px; text-align: center; }
+        .zone { font-size: 22px; color: #4caf50; font-weight: bold; margin: 10px 0; text-align: center; }
+        ul { list-style: none; padding: 0; }
+        li { background: #2c2c2c; margin: 8px 0; padding: 12px; border-radius: 6px; font-size: 16px; }
+        .date { color: #888; font-size: 14px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Camioneta de Armas - GTA Online</h1>
+        <div class="card" id="content">
+            <p style="text-align:center;">Buscando la ubicación de hoy...</p>
+        </div>
+    </div>
+
+    <script>
+        // Lee automáticamente tu archivo gun_van.json del mismo repositorio
+        fetch('gun_van.json')
+            .then(response => response.json())
+            .then(data => {
+                let armasHTML = data.weapons.map(arma => `<li>🔫 ${arma}</li>`).join('');
+                document.getElementById('content').innerHTML = `
+                    <div class="date">Fecha: ${data.date}</div>
+                    <div class="zone">${data.zone}</div>
+                    <p><strong>Armas y objetos de hoy:</strong></p>
+                    <ul>${armasHTML}</ul>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('content').innerHTML = '<p style="text-align:center; color: #ff5252;">No se pudo cargar la información.</p>';
+            });
+    </script>
+</body>
+</html>
