@@ -17,27 +17,53 @@
             padding: 0; 
         }
         .header { 
-            padding: 12px; 
+            padding: 8px; 
             text-align: center; 
             background: #1e1e1e; 
             border-bottom: 2px solid #ff9800; 
         }
-        h1 { margin: 0 0 5px 0; font-size: 18px; color: #ff9800; }
-        .zone { font-size: 15px; color: #4caf50; font-weight: bold; }
+        h1 { margin: 0; font-size: 15px; color: #ff9800; }
+        .zone { font-size: 13px; color: #4caf50; font-weight: bold; }
         
-        /* Contenedor del mapa interactivo */
+        /* Mapa proporcionado y limpio */
         #map { 
-            height: 400px; 
+            height: 320px; 
             width: 100%; 
             background: #0b2545; 
         }
         
+        /* Tarjeta de armas compacta abajo */
         .info-card { 
-            padding: 15px; 
+            padding: 8px 12px; 
             background: #1e1e1e; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow-x: auto;
         }
-        ul { list-style: none; padding: 0; margin: 10px 0 0 0; }
-        li { background: #2c2c2c; margin: 5px 0; padding: 10px; border-radius: 6px; }
+        .info-card h3 { 
+            margin: 0; 
+            font-size: 12px; 
+            color: #ff9800; 
+            white-space: nowrap; 
+        }
+        
+        /* Lista de armas en una sola línea horizontal compacta */
+        ul { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+            display: flex; 
+            gap: 6px; 
+        }
+        li { 
+            background: #2c2c2c; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            white-space: nowrap; 
+            border: 1px solid #3d3d3d;
+        }
     </style>
 </head>
 <body>
@@ -50,8 +76,9 @@
     <!-- Mapa interactivo -->
     <div id="map"></div>
 
+    <!-- Sección de armas ultra compacta -->
     <div class="info-card">
-        <h3>🔫 Armas del día:</h3>
+        <h3>Armas:</h3>
         <ul id="weapons-list"></ul>
     </div>
 
@@ -59,41 +86,37 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // 1. Inicializamos el mapa interactivo en modo plano
+        // Inicializamos el mapa con proporción cuadrada real
         const map = L.map('map', {
             crs: L.CRS.Simple,
-            minZoom: -1,
+            minZoom: 0,
             maxZoom: 3,
             zoomSnap: 0.5
         });
 
-        // 2. Límites adaptados para una imagen horizontal (Alto: 2048, Ancho: 4096)
-        const bounds = [[0, 0], [2048, 4096]]; 
+        const bounds = [[0, 0], [2048, 2048]]; 
         const mapImage = 'map.jpg'; 
         
         L.imageOverlay(mapImage, bounds).addTo(map);
         map.fitBounds(bounds);
 
-        // 3. Leemos tu archivo gun_van.json de GitHub
         fetch('gun_van.json')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('zone-name').innerText = data.zone;
 
-                // Cargamos la lista de armas
+                // Armas en formato etiqueta chica
                 let listHTML = data.weapons.map(arma => `<li>🔫 ${arma}</li>`).join('');
                 document.getElementById('weapons-list').innerHTML = listHTML;
 
-                // 4. Ubicamos el marcador de la Gun Van
-                // Invertimos el orden para formato horizontal (latitude = Y, longitude = X)
+                // Coordenadas exactas dentro del mapa cuadrado (0 a 2048)
                 const posY = data.latitude || 1024;
-                const posX = data.longitude || 2048;
+                const posX = data.longitude || 1024;
 
                 const marker = L.marker([posY, posX]).addTo(map);
                 marker.bindPopup(`<b>${data.zone}</b><br>¡La Gun Van está acá!`).openPopup();
                 
-                // Centramos la cámara en la camioneta
-                map.setView([posY, posX], 0);
+                map.setView([posY, posX], 1);
             })
             .catch(err => {
                 document.getElementById('zone-name').innerText = 'Error al cargar los datos';
