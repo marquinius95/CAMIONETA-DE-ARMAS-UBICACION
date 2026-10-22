@@ -1,0 +1,30 @@
+name: Actualizar Gun Van Diariamente
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 06:15 UTC
+    - cron: '15 6 * * *'
+  workflow_dispatch: # Permite probarlo manualmente cuando quieras
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Ejecutar script de actualización
+        run: python actualizar.py
+
+      - name: Guardar cambios en el repositorio
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add gun_van.json
+          git diff-index --quiet HEAD || git commit -m "🤖 Ubicación diaria de la Gun Van actualizada"
+          git push
