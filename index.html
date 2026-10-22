@@ -15,54 +15,26 @@
             font-family: Arial, sans-serif; 
             margin: 0; 
             padding: 0; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
         .header { 
-            padding: 8px; 
+            padding: 10px; 
             text-align: center; 
             background: #1e1e1e; 
             border-bottom: 2px solid #ff9800; 
+            flex-shrink: 0;
         }
-        h1 { margin: 0; font-size: 15px; color: #ff9800; }
-        .zone { font-size: 13px; color: #4caf50; font-weight: bold; }
+        h1 { margin: 0; font-size: 16px; color: #ff9800; }
+        .zone { font-size: 14px; color: #4caf50; font-weight: bold; margin-top: 2px; }
         
-        /* Mapa proporcionado y limpio */
+        /* El mapa ahora ocupa todo el espacio restante de la pantalla */
         #map { 
-            height: 320px; 
+            flex-grow: 1; 
             width: 100%; 
             background: #0b2545; 
-        }
-        
-        /* Tarjeta de armas compacta abajo */
-        .info-card { 
-            padding: 8px 12px; 
-            background: #1e1e1e; 
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            overflow-x: auto;
-        }
-        .info-card h3 { 
-            margin: 0; 
-            font-size: 12px; 
-            color: #ff9800; 
-            white-space: nowrap; 
-        }
-        
-        /* Lista de armas en una sola línea horizontal compacta */
-        ul { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-            display: flex; 
-            gap: 6px; 
-        }
-        li { 
-            background: #2c2c2c; 
-            padding: 4px 8px; 
-            border-radius: 4px; 
-            font-size: 12px; 
-            white-space: nowrap; 
-            border: 1px solid #3d3d3d;
         }
     </style>
 </head>
@@ -73,20 +45,14 @@
         <div id="zone-name" class="zone">Cargando ubicación...</div>
     </div>
 
-    <!-- Mapa interactivo -->
+    <!-- Mapa interactivo ocupando el espacio principal -->
     <div id="map"></div>
-
-    <!-- Sección de armas ultra compacta -->
-    <div class="info-card">
-        <h3>Armas:</h3>
-        <ul id="weapons-list"></ul>
-    </div>
 
     <!-- Librería del mapa (Leaflet JS) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Inicializamos el mapa con proporción cuadrada real
+        // Inicializamos el mapa interactivo
         const map = L.map('map', {
             crs: L.CRS.Simple,
             minZoom: 0,
@@ -100,16 +66,13 @@
         L.imageOverlay(mapImage, bounds).addTo(map);
         map.fitBounds(bounds);
 
+        // Leemos el archivo gun_van.json automatizado
         fetch('gun_van.json')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('zone-name').innerText = data.zone;
 
-                // Armas en formato etiqueta chica
-                let listHTML = data.weapons.map(arma => `<li>🔫 ${arma}</li>`).join('');
-                document.getElementById('weapons-list').innerHTML = listHTML;
-
-                // Coordenadas exactas dentro del mapa cuadrado (0 a 2048)
+                // Coordenadas dentro del mapa cuadrado (0 a 2048)
                 const posY = data.latitude || 1024;
                 const posX = data.longitude || 1024;
 
