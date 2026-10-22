@@ -25,11 +25,11 @@
         h1 { margin: 0 0 5px 0; font-size: 18px; color: #ff9800; }
         .zone { font-size: 15px; color: #4caf50; font-weight: bold; }
         
-        /* Contenedor del mapa */
+        /* Contenedor del mapa interactivo */
         #map { 
-            height: 380px; 
+            height: 400px; 
             width: 100%; 
-            background: #0fa8d2; /* Fondo de agua */
+            background: #0b2545; /* Color del océano de fondo mientras carga */
         }
         
         .info-card { 
@@ -44,7 +44,7 @@
 
     <div class="header">
         <h1>🚚 Gun Van - GTA Online</h1>
-        <div id="zone-name" class="zone">Cargando mapa...</div>
+        <div id="zone-name" class="zone">Cargando ubicación...</div>
     </div>
 
     <!-- Mapa interactivo -->
@@ -59,40 +59,41 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // 1. Inicializamos el mapa con coordenadas de GTA V
+        // 1. Inicializamos el mapa interactivo en modo plano (CRS.Simple)
         const map = L.map('map', {
-            center: [0, 0],
-            zoom: 3,
-            minZoom: 2,
-            maxZoom: 5
+            crs: L.CRS.Simple,
+            minZoom: -1,
+            maxZoom: 3,
+            zoomSnap: 0.5
         });
 
-        // 2. Cargamos las teselas (tiles) HD del mapa de GTA V
-        L.tileLayer('https://s.rsg.sc/sc/images/games/GTAV/map/satellite/{z}/{x}/{y}.jpg', {
-            attribution: 'Rockstar Games',
-            noWrap: true
-        }).addTo(map);
+        // 2. Cargamos la imagen satelital oficial del mapa de GTA V desde un repositorio público abierto
+        const bounds = [[0, 0], [2048, 2048]]; // Tamaño del plano del mapa
+        const mapImage = 'https://raw.githubusercontent.com/vicente2002/gta5-map-leaflet/master/map.jpg'; 
+        
+        L.imageOverlay(mapImage, bounds).addTo(map);
+        map.fitBounds(bounds);
 
         // 3. Leemos tu archivo gun_van.json de GitHub
         fetch('gun_van.json')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('zone-name').innerText = data.zone || data.location_name;
+                document.getElementById('zone-name').innerText = data.zone;
 
                 // Cargamos la lista de armas
                 let listHTML = data.weapons.map(arma => `<li>🔫 ${arma}</li>`).join('');
                 document.getElementById('weapons-list').innerHTML = listHTML;
 
-                // 4. Ubicamos el marcador en el mapa
-                // Si lat/lng no están definidas, ponemos un punto por defecto
-                const lat = data.latitude || -20;
-                const lng = data.longitude || 0;
+                // 4. Ubicamos el marcador de la Gun Van en el mapa
+                // Valores de X e Y dentro de la escala del mapa (0 a 2048)
+                const posX = data.latitude || 1024;
+                const posY = data.longitude || 1024;
 
-                const marker = L.marker([lat, lng]).addTo(map);
+                const marker = L.marker([posX, posY]).addTo(map);
                 marker.bindPopup(`<b>${data.zone}</b><br>¡La Gun Van está acá!`).openPopup();
                 
-                // Centramos la cámara en el marcador
-                map.setView([lat, lng], 3);
+                // Centramos la cámara en la camioneta
+                map.setView([posX, posY], 1);
             })
             .catch(err => {
                 document.getElementById('zone-name').innerText = 'Error al cargar los datos';
