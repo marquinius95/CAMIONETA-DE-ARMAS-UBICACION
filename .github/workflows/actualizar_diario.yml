@@ -2,9 +2,12 @@ name: Actualizar Gun Van Diariamente
 
 on:
   schedule:
-    # Se ejecuta todos los días a las 06:15 UTC
     - cron: '15 6 * * *'
-  workflow_dispatch: # Permite probarlo manualmente cuando quieras
+  workflow_dispatch:
+
+# ESTO ES LO NUEVO: Le da permiso al robot para guardar cambios
+permissions:
+  contents: write
 
 jobs:
   update-data:
