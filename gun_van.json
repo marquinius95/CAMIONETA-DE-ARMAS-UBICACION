@@ -1,9 +1,8 @@
 {
-  "date": "2026-10-21",
-  "location_name": "Grand Senora Desert",
-  "zone": "Desierto de Grand Senora",
-  "latitude": 1450.5,
-  "longitude": 2300.2,
+  "date": "2026-10-22",
+  "zone": "Ubicación en tiempo real",
+  "latitude": 1024,
+  "longitude": 1024,
   "weapons": [
     "Railgun",
     "Widowmaker",
