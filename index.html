@@ -29,7 +29,7 @@
         #map { 
             height: 400px; 
             width: 100%; 
-            background: #0b2545; /* Color del océano de fondo mientras carga */
+            background: #0b2545; 
         }
         
         .info-card { 
@@ -59,7 +59,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // 1. Inicializamos el mapa interactivo en modo plano (CRS.Simple)
+        // 1. Inicializamos el mapa interactivo en modo plano
         const map = L.map('map', {
             crs: L.CRS.Simple,
             minZoom: -1,
@@ -67,9 +67,9 @@
             zoomSnap: 0.5
         });
 
-        // 2. Cargamos la imagen satelital oficial del mapa de GTA V desde un repositorio público abierto
-        const bounds = [[0, 0], [2048, 2048]]; // Tamaño del plano del mapa
-        const mapImage = 'https://raw.githubusercontent.com/vicente2002/gta5-map-leaflet/master/map.jpg'; 
+        // 2. Cargamos tu propia imagen "map.jpg" que subiste al repositorio
+        const bounds = [[0, 0], [2048, 2048]]; 
+        const mapImage = 'map.jpg'; 
         
         L.imageOverlay(mapImage, bounds).addTo(map);
         map.fitBounds(bounds);
@@ -85,7 +85,6 @@
                 document.getElementById('weapons-list').innerHTML = listHTML;
 
                 // 4. Ubicamos el marcador de la Gun Van en el mapa
-                // Valores de X e Y dentro de la escala del mapa (0 a 2048)
                 const posX = data.latitude || 1024;
                 const posY = data.longitude || 1024;
 
