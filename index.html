@@ -4,40 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GTA Gun Van Tracker</title>
+    
+    <!-- Cargamos la librería del mapa (Leaflet CSS) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <style>
-        body { background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; text-align: center; padding: 20px; margin: 0; }
-        .container { max-width: 400px; margin: auto; padding-top: 20px; }
-        .card { background: #1e1e1e; border-radius: 12px; padding: 20px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: left; }
-        h1 { color: #ff9800; font-size: 20px; text-align: center; }
-        .zone { font-size: 22px; color: #4caf50; font-weight: bold; margin: 10px 0; text-align: center; }
-        ul { list-style: none; padding: 0; }
-        li { background: #2c2c2c; margin: 8px 0; padding: 12px; border-radius: 6px; font-size: 16px; }
-        .date { color: #888; font-size: 14px; text-align: center; }
+        body { 
+            background-color: #121212; 
+            color: #ffffff; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+        }
+        .header { 
+            padding: 10px; 
+            text-align: center; 
+            background: #1e1e1e; 
+            border-bottom: 2px solid #ff9800; 
+        }
+        h1 { margin: 5px 0; font-size: 18px; color: #ff9800; }
+        .zone { font-size: 16px; color: #4caf50; font-weight: bold; }
+        
+        /* Estilo del contenedor del mapa */
+        #map { 
+            height: 350px; 
+            width: 100%; 
+            background: #0fa8d2; /* Color de fondo representando el océano */
+        }
+        
+        .info-card { 
+            padding: 15px; 
+            background: #1e1e1e; 
+        }
+        ul { list-style: none; padding: 0; margin: 10px 0 0 0; }
+        li { background: #2c2c2c; margin: 5px 0; padding: 10px; border-radius: 6px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Camioneta de Armas - GTA Online</h1>
-        <div class="card" id="content">
-            <p style="text-align:center;">Buscando la ubicación de hoy...</p>
-        </div>
+
+    <div class="header">
+        <h1>Camioneta de Armas - GTA V</h1>
+        <div id="zone-name" class="zone">Cargando ubicación...</div>
     </div>
 
+    <!-- Contenedor donde se dibuja el mapa interactivo -->
+    <div id="map"></div>
+
+    <div class="info-card">
+        <h3>Armas del día:</h3>
+        <ul id="weapons-list"></ul>
+    </div>
+
+    <!-- Cargamos la librería del mapa (Leaflet JS) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        // Lee automáticamente tu archivo gun_van.json del mismo repositorio
+        // 1. Inicializamos el mapa en 2D interactivo
+        const map = L.map('map', {
+            crs: L.CRS.Simple, // Usamos coordenadas planas para imágenes
+            minZoom: -2,
+            maxZoom: 2
+        });
+
+        // 2. Cargamos una imagen en alta resolución del mapa de GTA V
+        const bounds = [[0, 0], [1000, 1000]]; // Tamaño del lienzo del mapa
+        const mapImage = 'https://i.imgur.com/3V7Z44G.jpeg'; // Imagen de satélite del mapa de Los Santos
+        L.imageOverlay(mapImage, bounds).addTo(map);
+        map.fitBounds(bounds);
+
+        // 3. Leemos tu archivo gun_van.json de GitHub
         fetch('gun_van.json')
             .then(response => response.json())
             .then(data => {
-                let armasHTML = data.weapons.map(arma => `<li>🔫 ${arma}</li>`).join('');
-                document.getElementById('content').innerHTML = `
-                    <div class="date">Fecha: ${data.date}</div>
-                    <div class="zone">${data.zone}</div>
-                    <p><strong>Armas y objetos de hoy:</strong></p>
-                    <ul>${armasHTML}</ul>
-                `;
+                document.getElementById('zone-name').innerText = data.zone;
+
+                // Cargamos la lista de armas
+                let listHTML = data.weapons.map(arma => `<li>🔫 ${arma}</li>`).join('');
+                document.getElementById('weapons-list').innerHTML = listHTML;
+
+                // 4. Ubicamos el marcador de la camioneta en el mapa
+                // (latitude y longitude en tu JSON deben ir de 0 a 1000 para calzar en la imagen)
+                const posX = data.latitude || 500;
+                const posY = data.longitude || 500;
+
+                const marker = L.marker([posX, posY]).addTo(map);
+                marker.bindPopup(`<b>${data.zone}</b><br>¡La Gun Van está aquí!`).openPopup();
+                
+                // Centramos la cámara en el marcador
+                map.setView([posX, posY], 0);
             })
-            .catch(error => {
-                document.getElementById('content').innerHTML = '<p style="text-align:center; color: #ff5252;">No se pudo cargar la información.</p>';
+            .catch(err => {
+                document.getElementById('zone-name').innerText = 'Error al cargar los datos';
             });
     </script>
 </body>
