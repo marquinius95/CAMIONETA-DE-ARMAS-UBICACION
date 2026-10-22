@@ -5,36 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GTA Gun Van Tracker</title>
     
-    <!-- Librería del mapa (Leaflet CSS) -->
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        body { 
-            background-color: #121212; 
-            color: #ffffff; 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 0; 
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
         }
+        
         .header { 
-            padding: 10px; 
+            padding: 8px; 
             text-align: center; 
             background: #1e1e1e; 
             border-bottom: 2px solid #ff9800; 
             flex-shrink: 0;
+            z-index: 1000;
         }
         h1 { margin: 0; font-size: 16px; color: #ff9800; }
-        .zone { font-size: 14px; color: #4caf50; font-weight: bold; margin-top: 2px; }
+        .zone { font-size: 13px; color: #4caf50; font-weight: bold; margin-top: 2px; }
         
-        /* El mapa ahora ocupa todo el espacio restante de la pantalla */
+        /* Contenedor del mapa a pantalla completa */
         #map { 
-            flex-grow: 1; 
+            flex: 1;
             width: 100%; 
             background: #0b2545; 
+        }
+
+        /* Mejora la calidad y suavizado de la imagen del mapa en los navegadores */
+        .leaflet-image-layer {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
     </style>
 </head>
@@ -45,17 +53,16 @@
         <div id="zone-name" class="zone">Cargando ubicación...</div>
     </div>
 
-    <!-- Mapa interactivo ocupando el espacio principal -->
+    <!-- Mapa interactivo -->
     <div id="map"></div>
 
-    <!-- Librería del mapa (Leaflet JS) -->
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Inicializamos el mapa interactivo
         const map = L.map('map', {
             crs: L.CRS.Simple,
-            minZoom: 0,
+            minZoom: -1,
             maxZoom: 3,
             zoomSnap: 0.5
         });
@@ -66,20 +73,19 @@
         L.imageOverlay(mapImage, bounds).addTo(map);
         map.fitBounds(bounds);
 
-        // Leemos el archivo gun_van.json automatizado
-        fetch('gun_van.json')
+        // Cargamos los datos evitando caché
+        fetch('gun_van.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
                 document.getElementById('zone-name').innerText = data.zone;
 
-                // Coordenadas dentro del mapa cuadrado (0 a 2048)
                 const posY = data.latitude || 1024;
                 const posX = data.longitude || 1024;
 
                 const marker = L.marker([posY, posX]).addTo(map);
                 marker.bindPopup(`<b>${data.zone}</b><br>¡La Gun Van está acá!`).openPopup();
                 
-                map.setView([posY, posX], 1);
+                map.setView([posY, posX], 0);
             })
             .catch(err => {
                 document.getElementById('zone-name').innerText = 'Error al cargar los datos';
