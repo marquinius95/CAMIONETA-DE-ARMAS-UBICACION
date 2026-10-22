@@ -32,14 +32,13 @@
         h1 { margin: 0; font-size: 16px; color: #ff9800; }
         .zone { font-size: 13px; color: #4caf50; font-weight: bold; margin-top: 2px; }
         
-        /* Contenedor del mapa a pantalla completa */
         #map { 
             flex: 1;
             width: 100%; 
             background: #0b2545; 
         }
 
-        /* Mejora la calidad y suavizado de la imagen del mapa en los navegadores */
+        /* Suavizado avanzado para gráficos HD en Leaflet */
         .leaflet-image-layer {
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
@@ -53,7 +52,6 @@
         <div id="zone-name" class="zone">Cargando ubicación...</div>
     </div>
 
-    <!-- Mapa interactivo -->
     <div id="map"></div>
 
     <!-- Leaflet JS -->
@@ -63,29 +61,30 @@
         const map = L.map('map', {
             crs: L.CRS.Simple,
             minZoom: -1,
-            maxZoom: 3,
+            maxZoom: 4,
             zoomSnap: 0.5
         });
 
-        const bounds = [[0, 0], [2048, 2048]]; 
+        // Límites ampliados a 4096x4096 para máxima nitidez
+        const bounds = [[0, 0], [4096, 4096]]; 
         const mapImage = 'map.jpg'; 
         
         L.imageOverlay(mapImage, bounds).addTo(map);
         map.fitBounds(bounds);
 
-        // Cargamos los datos evitando caché
         fetch('gun_van.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
                 document.getElementById('zone-name').innerText = data.zone;
 
-                const posY = data.latitude || 1024;
-                const posX = data.longitude || 1024;
+                // Coordenadas escaladas al mapa de 4096
+                const posY = data.latitude || 2048;
+                const posX = data.longitude || 2048;
 
                 const marker = L.marker([posY, posX]).addTo(map);
                 marker.bindPopup(`<b>${data.zone}</b><br>¡La Gun Van está acá!`).openPopup();
                 
-                map.setView([posY, posX], 0);
+                map.setView([posY, posX], 0.5);
             })
             .catch(err => {
                 document.getElementById('zone-name').innerText = 'Error al cargar los datos';
