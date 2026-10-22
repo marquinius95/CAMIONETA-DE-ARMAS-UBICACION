@@ -17,46 +17,27 @@
             padding: 0; 
         }
         .header { 
-            padding: 8px 12px; 
+            padding: 12px; 
             text-align: center; 
             background: #1e1e1e; 
             border-bottom: 2px solid #ff9800; 
         }
-        h1 { margin: 0; font-size: 16px; color: #ff9800; }
-        .zone { font-size: 14px; color: #4caf50; font-weight: bold; }
+        h1 { margin: 0 0 5px 0; font-size: 18px; color: #ff9800; }
+        .zone { font-size: 15px; color: #4caf50; font-weight: bold; }
         
-        /* Mapa más compacto y cómodo */
+        /* Contenedor del mapa interactivo */
         #map { 
-            height: 280px; 
+            height: 400px; 
             width: 100%; 
             background: #0b2545; 
         }
         
         .info-card { 
-            padding: 10px 15px; 
+            padding: 15px; 
             background: #1e1e1e; 
         }
-        .info-card h3 { 
-            margin: 0 0 6px 0; 
-            font-size: 14px; 
-            color: #ff9800; 
-        }
-        
-        /* Lista de armas compacta */
-        ul { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 4px; 
-        }
-        li { 
-            background: #2c2c2c; 
-            padding: 6px 10px; 
-            border-radius: 6px; 
-            font-size: 13px; 
-        }
+        ul { list-style: none; padding: 0; margin: 10px 0 0 0; }
+        li { background: #2c2c2c; margin: 5px 0; padding: 10px; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -66,7 +47,7 @@
         <div id="zone-name" class="zone">Cargando ubicación...</div>
     </div>
 
-    <!-- Mapa interactivo compacto -->
+    <!-- Mapa interactivo -->
     <div id="map"></div>
 
     <div class="info-card">
@@ -78,6 +59,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+        // 1. Inicializamos el mapa interactivo en modo plano
         const map = L.map('map', {
             crs: L.CRS.Simple,
             minZoom: -1,
@@ -85,27 +67,32 @@
             zoomSnap: 0.5
         });
 
+        // 2. Límites adaptados para una imagen horizontal (Alto: 2048, Ancho: 4096)
         const bounds = [[0, 0], [2048, 4096]]; 
         const mapImage = 'map.jpg'; 
         
         L.imageOverlay(mapImage, bounds).addTo(map);
         map.fitBounds(bounds);
 
+        // 3. Leemos tu archivo gun_van.json de GitHub
         fetch('gun_van.json')
-            .text()
-            .then(text => JSON.parse(text))
+            .then(response => response.json())
             .then(data => {
                 document.getElementById('zone-name').innerText = data.zone;
 
+                // Cargamos la lista de armas
                 let listHTML = data.weapons.map(arma => `<li>🔫 ${arma}</li>`).join('');
                 document.getElementById('weapons-list').innerHTML = listHTML;
 
+                // 4. Ubicamos el marcador de la Gun Van
+                // Invertimos el orden para formato horizontal (latitude = Y, longitude = X)
                 const posY = data.latitude || 1024;
                 const posX = data.longitude || 2048;
 
                 const marker = L.marker([posY, posX]).addTo(map);
                 marker.bindPopup(`<b>${data.zone}</b><br>¡La Gun Van está acá!`).openPopup();
                 
+                // Centramos la cámara en la camioneta
                 map.setView([posY, posX], 0);
             })
             .catch(err => {
