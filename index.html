@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GTA Gun Van Tracker</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
     <style>
         html, body {
             height: 100%;
@@ -32,16 +28,46 @@
         h1 { margin: 0; font-size: 16px; color: #ff9800; }
         .zone { font-size: 13px; color: #4caf50; font-weight: bold; margin-top: 2px; }
         
-        #map { 
+        /* Contenedor con scroll para movernos por el mapa gigante de 4096px */
+        #map-container {
             flex: 1;
-            width: 100%; 
-            background: #0b2545; 
+            position: relative;
+            overflow: auto;
+            background: #0b2545;
         }
 
-        /* Suavizado avanzado para gráficos HD en Leaflet */
-        .leaflet-image-layer {
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
+        #map-image {
+            display: block;
+            width: 4096px;
+            height: 4096px;
+        }
+
+        /* El marcador posicionado exactamente por píxeles puros */
+        .van-marker {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            background: #ff9800;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+            transform: translate(-50%, -50%);
+            z-index: 500;
+            cursor: pointer;
+        }
+
+        .van-popup {
+            position: absolute;
+            background: #1e1e1e;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid #ff9800;
+            transform: translate(-50%, -45px);
+            white-space: nowrap;
+            z-index: 501;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -52,40 +78,38 @@
         <div id="zone-name" class="zone">Cargando ubicación...</div>
     </div>
 
-    <div id="map"></div>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Contenedor del mapa plano -->
+    <div id="map-container">
+        <div style="position: relative; width: 4096px; height: 4096px;">
+            <img id="map-image" src="map.jpg" alt="Mapa GTA V">
+            <div id="marker" class="van-marker" style="display: none;">
+                <div id="popup" class="van-popup"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const map = L.map('map', {
-            crs: L.CRS.Simple,
-            minZoom: -1,
-            maxZoom: 4,
-            zoomSnap: 0.5
-        });
-
-        // Límites ampliados a 4096x4096 para máxima nitidez
-        const bounds = [[0, 0], [4096, 4096]]; 
-        const mapImage = 'map.jpg'; 
-        
-        L.imageOverlay(mapImage, bounds).addTo(map);
-        map.fitBounds(bounds);
-
         fetch('gun_van.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
                 document.getElementById('zone-name').innerText = data.zone;
 
-                // Leaflet CRS.Simple interpreta: [lat (Y desde arriba), lng (X desde la izquierda)]
-                const posY = data.latitude !== undefined ? data.latitude : 2048;
-                const posX = data.longitude !== undefined ? data.longitude : 2048;
+                // Coordenadas directas en píxeles (Y = distancia desde arriba, X = distancia desde la izquierda)
+                const posY = data.latitude; 
+                const posX = data.longitude; 
 
-                const marker = L.marker([posY, posX]).addTo(map);
-                marker.bindPopup(`<b>${data.zone}</b><br>¡La Gun Van está acá!`).openPopup();
-                
-                // Centrar el mapa con un zoom óptimo sobre la ubicación exacta de la van
-                map.setView([posY, posX], 1.5);
+                const marker = document.getElementById('marker');
+                const popup = document.getElementById('popup');
+
+                marker.style.top = posY + 'px';
+                marker.style.left = posX + 'px';
+                popup.innerHTML = `<b>${data.zone}</b><br>¡La Gun Van está acá!`;
+                marker.style.display = 'block';
+
+                // Centrar automáticamente el scroll de la pantalla justo en el marcador
+                const container = document.getElementById('map-container');
+                container.scrollTop = posY - (container.clientHeight / 2);
+                container.scrollLeft = posX - (container.clientWidth / 2);
             })
             .catch(err => {
                 document.getElementById('zone-name').innerText = 'Error al cargar los datos';
