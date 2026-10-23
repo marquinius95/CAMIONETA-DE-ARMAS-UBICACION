@@ -1,11 +1,12 @@
 {
   "date": "2026-10-23",
-  "zone": "Deshuesadero (Sandy Shores)",
-  "latitude": 880,
-  "longitude": 2550,
+  "zone": "Tataviam Mountains",
+  "latitude": 2200,
+  "longitude": 3300,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Sticky Bomb"
+    "Compact EMP Launcher",
+    "Stun Gun"
   ]
 }
