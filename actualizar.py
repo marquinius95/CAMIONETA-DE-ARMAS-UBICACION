@@ -2,18 +2,18 @@ import urllib.request
 import json
 from datetime import datetime, timezone
 
-# DICCIONARIO CALIBRADO CON EL PUNTO EXACTO DEL COMPLEX INDUSTRIAL
+# DICCIONARIO CALIBRADO CON EL EJE CORRECTO DE LEAFLET (0,0 ARRIBA A LA IZQUIERDA)
 MAPA_CALIBRADO = {
-    # Coordenadas ajustadas milimétricamente al centro exacto del complejo
-    "sandy shores": {"lat": 1920, "lng": 2580, "zone": "Deshuesadero (Sandy Shores)"},
-    "grand senora desert": {"lat": 1920, "lng": 2580, "zone": "Grand Senora Desert"},
+    # El desguase / complejo industrial al este del aeródromo de Sandy Shores (tu círculo rojo)
+    "sandy shores": {"lat": 1180, "lng": 2550, "zone": "Deshuesadero (Sandy Shores)"},
+    "grand senora desert": {"lat": 1300, "lng": 2600, "zone": "Grand Senora Desert"},
     "pacific bluffs": {"lat": 2750, "lng": 1150, "zone": "Pacific Bluffs"},
     "paleto bay": {"lat": 480, "lng": 1380, "zone": "Paleto Bay"},
     "tataviam mountains": {"lat": 2250, "lng": 3320, "zone": "Tataviam Mountains"},
     "vinewood hills": {"lat": 2400, "lng": 2100, "zone": "Vinewood Hills"},
     "downtown los santos": {"lat": 3100, "lng": 2150, "zone": "Downtown Los Santos"},
     "los santos international airport": {"lat": 3650, "lng": 1850, "zone": "LSIA"},
-    "ron alternates wind farm": {"lat": 1900, "lng": 3100, "zone": "Ron Alternates Wind Farm"},
+    "ron alternates wind farm": {"lat": 1600, "lng": 3100, "zone": "Ron Alternates Wind Farm"},
     "banham canyon": {"lat": 3250, "lng": 1150, "zone": "Banham Canyon"}
 }
 
@@ -56,6 +56,7 @@ def obtener_ubicacion_real():
             print(f"Fallo al consultar {url}: {e}")
             continue
             
+    # Respaldo por defecto apuntando exactamente al círculo rojo de Sandy Shores
     ubicacion_actual = MAPA_CALIBRADO["sandy shores"]
 
     return {
@@ -70,4 +71,4 @@ if __name__ == "__main__":
     datos_nuevos = obtener_ubicacion_real()
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
-    print("¡Ubicación ajustada exactamente sobre los edificios!")
+    print("¡Ubicación corregida con el eje Leaflet!")
