@@ -77,14 +77,15 @@
             .then(data => {
                 document.getElementById('zone-name').innerText = data.zone;
 
-                // Coordenadas escaladas al mapa de 4096
-                const posY = data.latitude || 2048;
-                const posX = data.longitude || 2048;
+                // Leaflet CRS.Simple interpreta: [lat (Y desde arriba), lng (X desde la izquierda)]
+                const posY = data.latitude !== undefined ? data.latitude : 2048;
+                const posX = data.longitude !== undefined ? data.longitude : 2048;
 
                 const marker = L.marker([posY, posX]).addTo(map);
                 marker.bindPopup(`<b>${data.zone}</b><br>¡La Gun Van está acá!`).openPopup();
                 
-                map.setView([posY, posX], 0.5);
+                // Centrar el mapa con un zoom óptimo sobre la ubicación exacta de la van
+                map.setView([posY, posX], 1.5);
             })
             .catch(err => {
                 document.getElementById('zone-name').innerText = 'Error al cargar los datos';
