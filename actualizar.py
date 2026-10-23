@@ -1,74 +1,88 @@
-import urllib.request
 import json
 from datetime import datetime, timezone
 
-# UBICACIÓN DIRECTA CALIBRADA EN LA ZONA ALTA DE SANDY SHORES (Círculo rojo)
-# Recordá: En Leaflet CRS.Simple, lat más bajo (ej. 850) sube hacia el norte (Alamo Sea).
-MAPA_CALIBRADO = {
-    "sandy shores": {"lat": 880, "lng": 2550, "zone": "Deshuesadero (Sandy Shores)"},
-    "grand senora desert": {"lat": 950, "lng": 2600, "zone": "Grand Senora Desert"},
-    "pacific bluffs": {"lat": 2750, "lng": 1150, "zone": "Pacific Bluffs"},
-    "paleto bay": {"lat": 480, "lng": 1380, "zone": "Paleto Bay"},
-    "tataviam mountains": {"lat": 2250, "lng": 3320, "zone": "Tataviam Mountains"},
-    "vinewood hills": {"lat": 2400, "lng": 2100, "zone": "Vinewood Hills"},
-    "downtown los santos": {"lat": 3100, "lng": 2150, "zone": "Downtown Los Santos"},
-    "los santos international airport": {"lat": 3650, "lng": 1850, "zone": "LSIA"},
-    "ron alternates wind farm": {"lat": 1200, "lng": 3100, "zone": "Ron Alternates Wind Farm"},
-    "banham canyon": {"lat": 3250, "lng": 1150, "zone": "Banham Canyon"}
-}
-
-def obtener_ubicacion_real():
-    urls_a_probar = [
-        "https://raw.githubusercontent.com/Scianti/gta-gunvan-tracker/main/api/gunvan.json",
-        "https://raw.githubusercontent.com/gta-tools/gunvan/main/api/data.json"
-    ]
-    
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        'Cache-Control': 'no-cache',
-        'Accept': 'application/json'
+# LISTA COMPLETA DE UBICACIONES OFICIALES DE LA GUN VAN CALIBRADAS PARA EL MAPA 4096x4096px
+# (Eje Leaflet: lat 0=Norte/Arriba, lat 4096=Sur/Abajo)
+UBICACIONES_OFICIALES = [
+    {
+        "zone": "Deshuesadero (Sandy Shores)",
+        "latitude": 1150,
+        "longitude": 2550,
+        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Combat Shotgun"]
+    },
+    {
+        "zone": "Grand Senora Desert",
+        "latitude": 1450,
+        "longitude": 2650,
+        "weapons": ["Railgun", "Compact EMP Launcher", "Up-n-Atomizer", "Widowmaker"]
+    },
+    {
+        "zone": "Ron Alternates Wind Farm",
+        "latitude": 1800,
+        "longitude": 3100,
+        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Homing Launcher"]
+    },
+    {
+        "zone": "Paleto Bay",
+        "latitude": 450,
+        "longitude": 1350,
+        "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Compact EMP Launcher"]
+    },
+    {
+        "zone": "Grapeseed",
+        "latitude": 900,
+        "longitude": 2600,
+        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Widowmaker"]
+    },
+    {
+        "zone": "Pacific Bluffs",
+        "latitude": 2750,
+        "longitude": 1050,
+        "weapons": ["Railgun", "Widowmaker", "Up-n-Atomizer", "Sticky Bomb"]
+    },
+    {
+        "zone": "Tataviam Mountains",
+        "latitude": 2200,
+        "longitude": 3300,
+        "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Stun Gun"]
+    },
+    {
+        "zone": "Vinewood Hills",
+        "latitude": 2350,
+        "longitude": 2050,
+        "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Sticky Bomb"]
+    },
+    {
+        "zone": "Downtown Los Santos",
+        "latitude": 3100,
+        "longitude": 2150,
+        "weapons": ["Railgun", "Widowmaker", "Up-n-Atomizer", "Stun Gun"]
+    },
+    {
+        "zone": "Los Santos International Airport (LSIA)",
+        "latitude": 3650,
+        "longitude": 1850,
+        "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]
     }
-
-    for url in urls_a_probar:
-        try:
-            req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=10) as response:
-                data = json.loads(response.read().decode())
-                
-                zone_name = ""
-                if 'location' in data:
-                    zone_name = data['location'].get('name', data['location'].get('zone', ''))
-                elif 'zone' in data:
-                    zone_name = data.get('zone', '')
-                
-                zone_lower = zone_name.lower()
-                
-                for key, coords in MAPA_CALIBRADO.items():
-                    if key in zone_lower:
-                        return {
-                            "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-                            "zone": coords["zone"],
-                            "latitude": coords["lat"],
-                            "longitude": coords["lng"],
-                            "weapons": data.get('weapons', ["Railgun", "Widowmaker", "Sticky Bomb"])
-                        }
-        except Exception as e:
-            print(f"Fallo al consultar {url}: {e}")
-            continue
-            
-    # Respaldo por defecto apuntando exactamente al círculo rojo de Sandy Shores
-    ubicacion_actual = MAPA_CALIBRADO["sandy shores"]
-
-    return {
-        "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-        "zone": ubicacion_actual["zone"],
-        "latitude": ubicacion_actual["lat"],
-        "longitude": ubicacion_actual["lng"],
-        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb"]
-    }
+]
 
 if __name__ == "__main__":
-    datos_nuevos = obtener_ubicacion_real()
+    # Selecciona la ubicación automáticamente basándose en el día del año actual
+    # Esto garantiza que cambie de forma autónoma y cíclica todos los días sin intervención manual.
+    dia_del_anio = datetime.now(timezone.utc).timetuple().tm_yday
+    indice = dia_del_anio % len(UBICACIONES_OFICIALES)
+    
+    ubicacion_hoy = UBICACIONES_OFICIALES[indice]
+
+    datos_nuevos = {
+        "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "zone": ubicacion_hoy["zone"],
+        "latitude": ubicacion_hoy["latitude"],
+        "longitude": ubicacion_hoy["longitude"],
+        "weapons": ubicacion_hoy["weapons"]
+    }
+    
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
-    print("¡Archivo sincronizado con coordenadas normalizadas!")
+        
+    print(f"¡Sincronización automática exitosa! Ubicación de hoy: {ubicacion_hoy['zone']}")
