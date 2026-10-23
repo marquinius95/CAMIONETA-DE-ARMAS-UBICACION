@@ -2,6 +2,23 @@ import urllib.request
 import json
 from datetime import datetime, timezone
 
+# DICCIONARIO MAESTRO CALIBRADO EXACTAMENTE PARA EL MAPA 4096x4096px
+# Coordenadas (lat, lng) en píxeles sobre tu lienzo Leaflet
+MAPA_CALIBRADO = {
+    "pacific bluffs": {"lat": 2750, "lng": 1150, "zone": "Pacific Bluffs"},
+    "sandy shores": {"lat": 1550, "lng": 2520, "zone": "Sandy Shores"},
+    "grand senora desert": {"lat": 1750, "lng": 2650, "zone": "Grand Senora Desert"},
+    "paleto bay": {"lat": 480, "lng": 1380, "zone": "Paleto Bay"},
+    "tataviam mountains": {"lat": 2250, "lng": 3320, "zone": "Tataviam Mountains"},
+    "vinewood hills": {"lat": 2400, "lng": 2100, "zone": "Vinewood Hills"},
+    "downtown los santos": {"lat": 3100, "lng": 2150, "zone": "Downtown Los Santos"},
+    "los santos international airport": {"lat": 3650, "lng": 1850, "zone": "LSIA"},
+    "ron alternates wind farm": {"lat": 1900, "lng": 3100, "zone": "Ron Alternates Wind Farm"},
+    "chiliad mountain state wilderness": {"lat": 900, "lng": 1800, "zone": "Mount Chiliad"},
+    "grapeseed": {"lat": 1100, "lng": 2600, "zone": "Grapeseed"},
+    "banham canyon": {"lat": 2500, "lng": 1000, "zone": "Banham Canyon"}
+}
+
 def obtener_ubicacion_real():
     urls_a_probar = [
         "https://raw.githubusercontent.com/Scianti/gta-gunvan-tracker/main/api/gunvan.json",
@@ -20,59 +37,32 @@ def obtener_ubicacion_real():
             with urllib.request.urlopen(req, timeout=10) as response:
                 data = json.loads(response.read().decode())
                 
+                zone_name = ""
                 if 'location' in data:
-                    loc = data['location']
-                    zone_name = loc.get('name', loc.get('zone', 'Ubicación actual'))
-                    raw_y = float(loc.get('y', loc.get('latitude', 0)))
-                    raw_x = float(loc.get('x', loc.get('longitude', 0)))
+                    zone_name = data['location'].get('name', data['location'].get('zone', ''))
                 elif 'zone' in data:
-                    zone_name = data.get('zone', 'Ubicación actual')
-                    raw_y = float(data.get('latitude', 0))
-                    raw_x = float(data.get('longitude', 0))
-                else:
-                    continue
-
-                # CALIBRACIÓN EXACTA PARA 4096x4096px
-                # Centro del mapa en coordenadas de imagen: (2048, 2048)
-                center_x = 2048
-                center_y = 2048
+                    zone_name = data.get('zone', '')
                 
-                # Factor de escala (ajusta el rango del mundo de GTA de ~8000 unidades al lienzo de 4096px)
-                scale = 0.512 
-
-                if abs(raw_y) <= 4500 and abs(raw_x) <= 4500:
-                    # Invertimos el eje Y (restando) para que el Norte del juego suba en el mapa web
-                    lat = int(center_y - (raw_y * scale))
-                    lng = int(center_x + (raw_x * scale))
-                else:
-                    lat = int(raw_y)
-                    lng = int(raw_x)
-
-                return {
-                    "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-                    "zone": zone_name,
-                    "latitude": max(100, min(3996, lat)),
-                    "longitude": max(100, min(3996, lng)),
-                    "weapons": data.get('weapons', ["Railgun", "Widowmaker", "Sticky Bomb"])
-                }
+                zone_lower = zone_name.lower()
+                
+                # Buscamos si la zona coincide con nuestro diccionario calibrado
+                for key, coords in MAPA_CALIBRADO.items():
+                    if key in zone_lower:
+                        return {
+                            "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                            "zone": coords["zone"],
+                            "latitude": coords["lat"],
+                            "longitude": coords["lng"],
+                            "weapons": data.get('weapons', ["Railgun", "Widowmaker", "Sticky Bomb"])
+                        }
         except Exception as e:
             print(f"Fallo al consultar {url}: {e}")
             continue
             
-    # Respaldo inteligente calibrado con coordenadas exactas sobre tierra firme en 4096x4096px
-    ubicaciones_respaldo = [
-        {"zone": "Sandy Shores", "lat": 1350, "lng": 2550},
-        {"zone": "Grand Senora Desert", "lat": 1650, "lng": 2600},
-        {"zone": "Pacific Bluffs", "lat": 2800, "lng": 950},
-        {"zone": "Paleto Bay", "lat": 450, "lng": 1400},
-        {"zone": "Tataviam Mountains", "lat": 2200, "lng": 3300},
-        {"zone": "Vinewood Hills", "lat": 2500, "lng": 2000},
-        {"zone": "Los Santos International", "lat": 3600, "lng": 1800}
-    ]
-    
+    # Respaldo inteligente por rotación diaria usando las coordenadas calibradas
+    ubicaciones_lista = list(MAPA_CALIBRADO.values())
     dia_del_mes = datetime.now(timezone.utc).day
-    index_ubicacion = dia_del_mes % len(ubicaciones_respaldo)
-    ubicacion_actual = ubicaciones_respaldo[index_ubicacion]
+    ubicacion_actual = ubicaciones_lista[dia_del_mes % len(ubicaciones_lista)]
 
     return {
         "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
@@ -86,4 +76,4 @@ if __name__ == "__main__":
     datos_nuevos = obtener_ubicacion_real()
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
-    print("¡Archivo gun_van.json calibrado y sincronizado con éxito!")
+    print("¡Archivo gun_van.json sincronizado con mapa calibrado!")
