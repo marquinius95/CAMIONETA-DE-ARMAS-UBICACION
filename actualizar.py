@@ -1,74 +1,186 @@
 import json
 from datetime import datetime, timezone
 
-# LISTA COMPLETA DE UBICACIONES OFICIALES DE LA GUN VAN CALIBRADAS PARA EL MAPA 4096x4096px
-# (Eje Leaflet: lat 0=Norte/Arriba, lat 4096=Sur/Abajo)
+# LISTA MAESTRA DE UBICACIONES CALIBRADAS CON PIXELES REALES (Mapa 4096x4096px)
 UBICACIONES_OFICIALES = [
     {
-        "zone": "Deshuesadero (Sandy Shores)",
-        "latitude": 1150,
-        "longitude": 2550,
+        "zone": "Elysian Island / Plaice Place",
+        "latitude": 3636,
+        "longitude": 1865,
         "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Combat Shotgun"]
     },
     {
-        "zone": "Grand Senora Desert",
-        "latitude": 1450,
-        "longitude": 2650,
+        "zone": "El Burro Heights",
+        "latitude": 3460,
+        "longitude": 2380,
         "weapons": ["Railgun", "Compact EMP Launcher", "Up-n-Atomizer", "Widowmaker"]
     },
     {
-        "zone": "Ron Alternates Wind Farm",
-        "latitude": 1800,
-        "longitude": 3100,
+        "zone": "La Mesa",
+        "latitude": 3329,
+        "longitude": 2193,
         "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Homing Launcher"]
     },
     {
-        "zone": "Paleto Bay",
-        "latitude": 450,
-        "longitude": 1350,
+        "zone": "Davis",
+        "latitude": 3313,
+        "longitude": 1936,
         "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Compact EMP Launcher"]
     },
     {
-        "zone": "Grapeseed",
-        "latitude": 900,
-        "longitude": 2600,
-        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Widowmaker"]
+        "zone": "La Puerta",
+        "latitude": 3307,
+        "longitude": 1689,
+        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Up-n-Atomizer"]
     },
     {
-        "zone": "Pacific Bluffs",
-        "latitude": 2750,
-        "longitude": 1050,
-        "weapons": ["Railgun", "Widowmaker", "Up-n-Atomizer", "Sticky Bomb"]
+        "zone": "San Andreas / Magellan Avenue",
+        "latitude": 3144,
+        "longitude": 1441,
+        "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Stun Gun"]
     },
     {
-        "zone": "Tataviam Mountains",
-        "latitude": 2200,
-        "longitude": 3300,
-        "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Stun Gun"]
+        "zone": "Pillbox Hill",
+        "latitude": 3018,
+        "longitude": 1962,
+        "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]
     },
     {
-        "zone": "Vinewood Hills",
-        "latitude": 2350,
-        "longitude": 2050,
-        "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Sticky Bomb"]
-    },
-    {
-        "zone": "Downtown Los Santos",
-        "latitude": 3100,
-        "longitude": 2150,
+        "zone": "Textile City",
+        "latitude": 3009,
+        "longitude": 2028,
         "weapons": ["Railgun", "Widowmaker", "Up-n-Atomizer", "Stun Gun"]
     },
     {
-        "zone": "Los Santos International Airport (LSIA)",
-        "latitude": 3650,
-        "longitude": 1850,
+        "zone": "La Mesa (Arcade / Maquinitas)",
+        "latitude": 3015,
+        "longitude": 2115,
+        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Combat Shotgun"]
+    },
+    {
+        "zone": "Murrieta Heights",
+        "latitude": 3212,
+        "longitude": 2267,
+        "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Compact EMP Launcher"]
+    },
+    {
+        "zone": "Mirror Park",
+        "latitude": 2869,
+        "longitude": 2240,
+        "weapons": ["Railgun", "Widowmaker", "Up-n-Atomizer", "Sticky Bomb"]
+    },
+    {
+        "zone": "Centro de Vinewood",
+        "latitude": 2739,
+        "longitude": 1977,
+        "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Homing Launcher"]
+    },
+    {
+        "zone": "Vinewood Oeste",
+        "latitude": 2747,
+        "longitude": 1729,
         "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]
+    },
+    {
+        "zone": "Del Perro",
+        "latitude": 2906,
+        "longitude": 1321,
+        "weapons": ["Railgun", "Widowmaker", "Up-n-Atomizer", "Stun Gun"]
+    },
+    {
+        "zone": "Chumash",
+        "latitude": 2403,
+        "longitude": 833,
+        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Combat Shotgun"]
+    },
+    {
+        "zone": "Vinewood Hills",
+        "latitude": 2369,
+        "longitude": 2139,
+        "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Compact EMP Launcher"]
+    },
+    {
+        "zone": "Tataviam Mountains",
+        "latitude": 2578,
+        "longitude": 2507,
+        "weapons": ["Railgun", "Widowmaker", "Up-n-Atomizer", "Sticky Bomb"]
+    },
+    {
+        "zone": "Central Palmer-Taylor",
+        "latitude": 2278,
+        "longitude": 2760,
+        "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Homing Launcher"]
+    },
+    {
+        "zone": "Grand Senora Desert",
+        "latitude": 1852,
+        "longitude": 2318,
+        "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]
+    },
+    {
+        "zone": "Deshuesadero (Sandy Shores)",
+        "latitude": 1763,
+        "longitude": 2650,
+        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Up-n-Atomizer"]
+    },
+    {
+        "zone": "Sandy Shores",
+        "latitude": 1479,
+        "longitude": 2464,
+        "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Combat Shotgun"]
+    },
+    {
+        "zone": "Grapeseed",
+        "latitude": 1199,
+        "longitude": 2446,
+        "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Sticky Bomb"]
+    },
+    {
+        "zone": "Alamo Sea",
+        "latitude": 1577,
+        "longitude": 2169,
+        "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Up-n-Atomizer"]
+    },
+    {
+        "zone": "Río Zancudo",
+        "latitude": 1760,
+        "longitude": 1878,
+        "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Sticky Bomb"]
+    },
+    {
+        "zone": "Lago Zancudo / Fort Zancudo Approach",
+        "latitude": 1882,
+        "longitude": 1397,
+        "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Combat Shotgun"]
+    },
+    {
+        "zone": "Chumash Norte",
+        "latitude": 1357,
+        "longitude": 1161,
+        "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Up-n-Atomizer"]
+    },
+    {
+        "zone": "Paleto Forest",
+        "latitude": 980,
+        "longitude": 1604,
+        "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Stun Gun"]
+    },
+    {
+        "zone": "Paleto Bay",
+        "latitude": 642,
+        "longitude": 1866,
+        "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Combat Shotgun"]
+    },
+    {
+        "zone": "Mount Chiliad",
+        "latitude": 606,
+        "longitude": 2358,
+        "weapons": ["Railgun", "Widowmaker", "Up-n-Atomizer", "Sticky Bomb"]
     }
 ]
 
 if __name__ == "__main__":
-    # Selecciona la ubicación automáticamente basándose en el día del año actual
-    # Esto garantiza que cambie de forma autónoma y cíclica todos los días sin intervención manual.
+    # Selecciona la ubicación de forma automática según el día del año actual
     dia_del_anio = datetime.now(timezone.utc).timetuple().tm_yday
     indice = dia_del_anio % len(UBICACIONES_OFICIALES)
     
