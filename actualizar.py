@@ -2,11 +2,11 @@ import urllib.request
 import json
 from datetime import datetime, timezone
 
-# DICCIONARIO CALIBRADO MILIMÉTRICAMENTE CON EL CENTRO DE TU CÍRCULO ROJO
+# DICCIONARIO CALIBRADO CON EL PUNTO EXACTO DEL COMPLEX INDUSTRIAL
 MAPA_CALIBRADO = {
-    # Coordenadas exactas centradas en el complejo industrial / desguace que marcaste
-    "sandy shores": {"lat": 2050, "lng": 2700, "zone": "Deshuesadero (Sandy Shores)"},
-    "grand senora desert": {"lat": 2050, "lng": 2700, "zone": "Grand Senora Desert"},
+    # Coordenadas ajustadas milimétricamente al centro exacto del complejo
+    "sandy shores": {"lat": 1920, "lng": 2580, "zone": "Deshuesadero (Sandy Shores)"},
+    "grand senora desert": {"lat": 1920, "lng": 2580, "zone": "Grand Senora Desert"},
     "pacific bluffs": {"lat": 2750, "lng": 1150, "zone": "Pacific Bluffs"},
     "paleto bay": {"lat": 480, "lng": 1380, "zone": "Paleto Bay"},
     "tataviam mountains": {"lat": 2250, "lng": 3320, "zone": "Tataviam Mountains"},
@@ -56,7 +56,6 @@ def obtener_ubicacion_real():
             print(f"Fallo al consultar {url}: {e}")
             continue
             
-    # Respaldo por defecto directamente en el círculo rojo que señalaste
     ubicacion_actual = MAPA_CALIBRADO["sandy shores"]
 
     return {
@@ -71,4 +70,4 @@ if __name__ == "__main__":
     datos_nuevos = obtener_ubicacion_real()
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
-    print("¡Ubicación sincronizada exactamente en el círculo rojo!")
+    print("¡Ubicación ajustada exactamente sobre los edificios!")
