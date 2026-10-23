@@ -40,6 +40,7 @@
             display: block;
             width: 4096px;
             height: 4096px;
+            cursor: crosshair;
         }
 
         /* El marcador posicionado exactamente por píxeles puros */
@@ -53,7 +54,7 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.8);
             transform: translate(-50%, -50%);
             z-index: 500;
-            cursor: pointer;
+            pointer-events: none;
         }
 
         .van-popup {
@@ -68,6 +69,23 @@
             white-space: nowrap;
             z-index: 501;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Caja flotante abajo a la izquierda para ver los píxeles del mouse */
+        #pixel-tracker {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(18, 18, 18, 0.9);
+            color: #00ffcc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            z-index: 2000;
+            border: 1px solid #ff9800;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            pointer-events: none;
         }
     </style>
 </head>
@@ -88,13 +106,25 @@
         </div>
     </div>
 
+    <!-- Indicador de coordenadas en vivo -->
+    <div id="pixel-tracker">X: 0 | Y: 0</div>
+
     <script>
+        const mapImage = document.getElementById('map-image');
+        const tracker = document.getElementById('pixel-tracker');
+
+        // Mostrar coordenadas exactas en tiempo real al mover el mouse sobre el mapa
+        mapImage.addEventListener('mousemove', (e) => {
+            const x = Math.round(e.offsetX);
+            const y = Math.round(e.offsetY);
+            tracker.innerText = `X (Left): ${x} | Y (Top): ${y}`;
+        });
+
         fetch('gun_van.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
                 document.getElementById('zone-name').innerText = data.zone;
 
-                // Coordenadas directas en píxeles (Y = distancia desde arriba, X = distancia desde la izquierda)
                 const posY = data.latitude; 
                 const posX = data.longitude; 
 
@@ -106,7 +136,7 @@
                 popup.innerHTML = `<b>${data.zone}</b><br>¡La Gun Van está acá!`;
                 marker.style.display = 'block';
 
-                // Centrar automáticamente el scroll de la pantalla justo en el marcador
+                // Centrar automáticamente el scroll en la ubicación actual
                 const container = document.getElementById('map-container');
                 container.scrollTop = posY - (container.clientHeight / 2);
                 container.scrollLeft = posX - (container.clientWidth / 2);
