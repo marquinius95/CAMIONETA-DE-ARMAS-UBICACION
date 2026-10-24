@@ -1,12 +1,12 @@
 {
   "date": "2026-10-24",
-  "zone": "Textile City",
-  "latitude": 3009,
-  "longitude": 2028,
+  "zone": "Mirror Park",
+  "latitude": 2869,
+  "longitude": 2240,
   "weapons": [
     "Railgun",
     "Widowmaker",
     "Up-n-Atomizer",
-    "Stun Gun"
+    "Sticky Bomb"
   ]
 }
