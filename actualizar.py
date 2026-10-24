@@ -180,9 +180,11 @@ UBICACIONES_OFICIALES = [
 ]
 
 if __name__ == "__main__":
-    # Selecciona la ubicación de forma automática según el día del año actual
     dia_del_anio = datetime.now(timezone.utc).timetuple().tm_yday
-    indice = dia_del_anio % len(UBICACIONES_OFICIALES)
+    
+    # Desfase de +3 para alinear el cálculo con el día real de Mirror Park
+    DESFASE = 3
+    indice = (dia_del_anio + DESFASE) % len(UBICACIONES_OFICIALES)
     
     ubicacion_hoy = UBICACIONES_OFICIALES[indice]
 
