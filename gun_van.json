@@ -1,12 +1,12 @@
 {
-  "date": "2026-10-24",
-  "zone": "Mirror Park",
-  "latitude": 2869,
-  "longitude": 2240,
+  "date": "2026-10-25",
+  "zone": "Centro de Vinewood",
+  "latitude": 2739,
+  "longitude": 1977,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Up-n-Atomizer",
-    "Sticky Bomb"
+    "Stun Gun",
+    "Homing Launcher"
   ]
 }
