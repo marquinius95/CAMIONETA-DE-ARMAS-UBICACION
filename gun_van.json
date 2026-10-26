@@ -1,12 +1,12 @@
 {
-  "date": "2026-10-25",
-  "zone": "Centro de Vinewood",
-  "latitude": 2739,
-  "longitude": 1977,
+  "date": "2026-10-26",
+  "zone": "Vinewood Oeste",
+  "latitude": 2747,
+  "longitude": 1729,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Stun Gun",
-    "Homing Launcher"
+    "Compact EMP Launcher",
+    "Sticky Bomb"
   ]
 }
