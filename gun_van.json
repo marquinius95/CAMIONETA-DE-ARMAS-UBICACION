@@ -1,12 +1,12 @@
 {
-  "date": "2026-10-26",
-  "zone": "Vinewood Oeste",
-  "latitude": 2747,
-  "longitude": 1729,
+  "date": "2026-10-27",
+  "zone": "Del Perro",
+  "latitude": 2906,
+  "longitude": 1321,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Compact EMP Launcher",
-    "Sticky Bomb"
+    "Up-n-Atomizer",
+    "Stun Gun"
   ]
 }
