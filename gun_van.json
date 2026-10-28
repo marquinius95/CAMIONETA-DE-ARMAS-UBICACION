@@ -1,12 +1,12 @@
 {
-  "date": "2026-10-27",
-  "zone": "Del Perro",
-  "latitude": 2906,
-  "longitude": 1321,
+  "date": "2026-10-28",
+  "zone": "Chumash",
+  "latitude": 2403,
+  "longitude": 833,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Up-n-Atomizer",
-    "Stun Gun"
+    "Sticky Bomb",
+    "Combat Shotgun"
   ]
 }
