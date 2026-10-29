@@ -1,12 +1,12 @@
 {
   "date": "2026-10-29",
-  "zone": "Río Zancudo",
-  "latitude": 1760,
-  "longitude": 1878,
+  "zone": "Centro de Vinewood",
+  "latitude": 2739,
+  "longitude": 1977,
   "weapons": [
     "Railgun",
     "Widowmaker",
     "Stun Gun",
-    "Sticky Bomb"
+    "Homing Launcher"
   ]
 }
