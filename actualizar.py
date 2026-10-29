@@ -34,34 +34,40 @@ MAPA_UBICACIONES = {
     "Mount Chiliad": {"latitude": 606, "longitude": 2358, "weapons": ["Railgun", "Widowmaker", "Up-n-Atomizer", "Sticky Bomb"]}
 }
 
-# 2. Secuencia ordenada de rotación de la Gun Van
+# 2. Mapeo explícito por fecha exacta (Ideal para forzar días específicos si Rockstar altera el orden)
+CALENDARIO_EXACTO = {
+    "2026-10-29": "Paleto Forest"
+}
+
+# 3. Secuencia de rotación real ordenada en orden consecutivo a partir de la ancla
 SECUENCIA_ROTACION = [
-    "Elysian Island / Plaice Place", "El Burro Heights", "La Mesa", "Davis",
-    "La Puerta", "San Andreas / Magellan Avenue", "Pillbox Hill", "Textile City",
-    "La Mesa (Maquinitas)", "Murrieta Heights", "Mirror Park", "Centro de Vinewood",
-    "Vinewood Oeste", "Del Perro", "Chumash", "Vinewood Hills",
-    "Tataviam Mountains", "Central Palmer-Taylor", "Grand Senora Desert",
+    "Paleto Forest", "Paleto Bay", "Mount Chiliad", "Elysian Island / Plaice Place",
+    "El Burro Heights", "La Mesa", "Davis", "La Puerta", "San Andreas / Magellan Avenue",
+    "Pillbox Hill", "Textile City", "La Mesa (Maquinitas)", "Murrieta Heights",
+    "Mirror Park", "Centro de Vinewood", "Vinewood Oeste", "Del Perro", "Chumash",
+    "Vinewood Hills", "Tataviam Mountains", "Central Palmer-Taylor", "Grand Senora Desert",
     "Deshuesadero (Sandy Shores)", "Sandy Shores", "Grapeseed", "Alamo Sea",
-    "Río Zancudo", "Lago Zancudo / Fort Zancudo", "Chumash Norte",
-    "Paleto Forest", "Paleto Bay", "Mount Chiliad"
+    "Río Zancudo", "Lago Zancudo / Fort Zancudo", "Chumash Norte"
 ]
 
 if __name__ == "__main__":
     ahora_utc = datetime.now(timezone.utc)
+    hoy_str = ahora_utc.strftime("%Y-%m-%d")
     
-    # Fecha ancla para calcular los días transcurridos de forma absoluta
-    fecha_base = datetime(2026, 1, 1, tzinfo=timezone.utc)
-    dias_totales = (ahora_utc - fecha_base).days
-    
-    # Ajuste para que hoy (29 de octubre de 2026) apunte exactamente a Paleto Forest
-    INDICE_CORRECCION = 0
-    indice = (dias_totales + INDICE_CORRECCION) % len(SECUENCIA_ROTACION)
-    
-    nombre_zona = SECUENCIA_ROTACION[indice]
+    # Si la fecha está explícitamente en el diccionario, se usa directamente.
+    # Si no, se calcula automáticamente por días transcurridos desde la fecha ancla (2026-10-29).
+    if hoy_str in CALENDARIO_EXACTO:
+        nombre_zona = CALENDARIO_EXACTO[hoy_str]
+    else:
+        fecha_ancla = datetime(2026, 10, 29, tzinfo=timezone.utc)
+        dias_transcurridos = (ahora_utc - fecha_ancla).days
+        indice = dias_transcurridos % len(SECUENCIA_ROTACION)
+        nombre_zona = SECUENCIA_ROTACION[indice]
+
     datos_zona = MAPA_UBICACIONES[nombre_zona]
 
     datos_nuevos = {
-        "date": ahora_utc.strftime("%Y-%m-%d"),
+        "date": hoy_str,
         "zone": nombre_zona,
         "latitude": datos_zona["latitude"],
         "longitude": datos_zona["longitude"],
@@ -71,4 +77,4 @@ if __name__ == "__main__":
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
         
-    print(f"Actualización exitosa para {ahora_utc.strftime('%Y-%m-%d')}: {nombre_zona}")
+    print(f"Actualización exitosa para {hoy_str}: {nombre_zona}")
