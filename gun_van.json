@@ -1,12 +1,12 @@
 {
   "date": "2026-10-29",
-  "zone": "Centro de Vinewood",
-  "latitude": 2739,
-  "longitude": 1977,
+  "zone": "Paleto Forest",
+  "latitude": 980,
+  "longitude": 1604,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Stun Gun",
-    "Homing Launcher"
+    "Sticky Bomb",
+    "Stun Gun"
   ]
 }
