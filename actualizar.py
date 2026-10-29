@@ -182,15 +182,11 @@ UBICACIONES_OFICIALES = [
 if __name__ == "__main__":
     ahora_utc = datetime.now(timezone.utc)
     
-    # Fecha ancla fija (punto de partida absoluto en el tiempo)
     fecha_base = datetime(2026, 1, 1, tzinfo=timezone.utc)
-    
-    # Calculamos la cantidad total de días transcurridos desde la fecha base
     dias_totales = (ahora_utc - fecha_base).days
     
-    # Usamos un índice base ajustado para que hoy encaje perfecto
-    # (Puedes ajustar este número base si alguna vez cambia el ciclo)
-    INDICE_BASE = 14 
+    # Índice base ajustado para que hoy (29 de octubre de 2026) dé exactamente Paleto Forest (índice 26)
+    INDICE_BASE = 12 
     
     indice = (dias_totales + INDICE_BASE) % len(UBICACIONES_OFICIALES)
     ubicacion_hoy = UBICACIONES_OFICIALES[indice]
