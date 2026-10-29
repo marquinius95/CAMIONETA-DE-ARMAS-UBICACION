@@ -180,16 +180,23 @@ UBICACIONES_OFICIALES = [
 ]
 
 if __name__ == "__main__":
-    dia_del_anio = datetime.now(timezone.utc).timetuple().tm_yday
+    ahora_utc = datetime.now(timezone.utc)
     
-    # Desfase de +3 para alinear el cálculo con el día real de Mirror Park
-    DESFASE = 3
-    indice = (dia_del_anio + DESFASE) % len(UBICACIONES_OFICIALES)
+    # Fecha ancla fija (punto de partida absoluto en el tiempo)
+    fecha_base = datetime(2026, 1, 1, tzinfo=timezone.utc)
     
+    # Calculamos la cantidad total de días transcurridos desde la fecha base
+    dias_totales = (ahora_utc - fecha_base).days
+    
+    # Usamos un índice base ajustado para que hoy encaje perfecto
+    # (Puedes ajustar este número base si alguna vez cambia el ciclo)
+    INDICE_BASE = 14 
+    
+    indice = (dias_totales + INDICE_BASE) % len(UBICACIONES_OFICIALES)
     ubicacion_hoy = UBICACIONES_OFICIALES[indice]
 
     datos_nuevos = {
-        "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "date": ahora_utc.strftime("%Y-%m-%d"),
         "zone": ubicacion_hoy["zone"],
         "latitude": ubicacion_hoy["latitude"],
         "longitude": ubicacion_hoy["longitude"],
@@ -199,4 +206,4 @@ if __name__ == "__main__":
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
         
-    print(f"¡Sincronización automática exitosa! Ubicación de hoy: {ubicacion_hoy['zone']}")
+    print(f"¡Actualización automática exitosa! Ubicación de hoy: {ubicacion_hoy['zone']}")
