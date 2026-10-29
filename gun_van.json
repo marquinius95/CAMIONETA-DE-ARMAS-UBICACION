@@ -1,12 +1,12 @@
 {
-  "date": "2026-10-28",
-  "zone": "Chumash",
-  "latitude": 2403,
-  "longitude": 833,
+  "date": "2026-10-29",
+  "zone": "Vinewood Hills",
+  "latitude": 2369,
+  "longitude": 2139,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Sticky Bomb",
-    "Combat Shotgun"
+    "Homing Launcher",
+    "Compact EMP Launcher"
   ]
 }
