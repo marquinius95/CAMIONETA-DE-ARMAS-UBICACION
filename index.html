@@ -109,7 +109,7 @@
     <!-- Indicador de coordenadas en vivo -->
     <div id="pixel-tracker">X: 0 | Y: 0</div>
 
-    <script>
+<script>
         const mapImage = document.getElementById('map-image');
         const tracker = document.getElementById('pixel-tracker');
         const container = document.getElementById('map-container');
@@ -122,7 +122,7 @@
         });
 
         // ==========================================
-        // MEJORAS PARA PC: Arrastrar con mano y Clic Derecho
+        // MEJORAS PARA PC: Arrastrar fluido y Clic Derecho
         // ==========================================
         const esPC = window.matchMedia('(pointer: fine)').matches;
 
@@ -130,43 +130,38 @@
             let estaArrastrando = false;
             let inicioX, inicioY, scrollLeft, scrollTop;
 
-            // Cambiar cursor inicial a manito abierta
             container.style.cursor = 'grab';
 
             container.addEventListener('mousedown', (e) => {
-                if (e.button !== 0) return; // Solo actuar con el clic izquierdo
+                if (e.button !== 0) return; // Solo clic izquierdo
                 estaArrastrando = true;
                 container.style.cursor = 'grabbing';
-                inicioX = e.pageX - container.offsetLeft;
-                inicioY = e.pageY - container.offsetTop;
+                inicioX = e.pageX;
+                inicioY = e.pageY;
                 scrollLeft = container.scrollLeft;
                 scrollTop = container.scrollTop;
+                e.preventDefault(); // Evita selección de texto
             });
 
-            container.addEventListener('mouseleave', () => {
-                estaArrastrando = false;
-                container.style.cursor = 'grab';
-            });
-
-            container.addEventListener('mouseup', () => {
-                estaArrastrando = false;
-                container.style.cursor = 'grab';
-            });
-
-            container.addEventListener('mousemove', (e) => {
+            // Escuchamos a nivel global (window) para que no se trabe si el mouse sale del contenedor
+            window.addEventListener('mousemove', (e) => {
                 if (!estaArrastrando) return;
-                e.preventDefault();
-                const x = e.pageX - container.offsetLeft;
-                const y = e.pageY - container.offsetTop;
-                const movimientoX = x - inicioX;
-                const movimientoY = y - inicioY;
+                const movimientoX = e.pageX - inicioX;
+                const movimientoY = e.pageY - inicioY;
                 container.scrollLeft = scrollLeft - movimientoX;
                 container.scrollTop = scrollTop - movimientoY;
             });
 
-            // Clic derecho para inspeccionar coordenadas de píxeles exactas
+            window.addEventListener('mouseup', () => {
+                if (estaArrastrando) {
+                    estaArrastrando = false;
+                    container.style.cursor = 'grab';
+                }
+            });
+
+            // Clic derecho para inspeccionar coordenadas exactas de píxeles
             container.addEventListener('contextmenu', (e) => {
-                e.preventDefault(); // Evita que se abra el menú predeterminado del navegador
+                e.preventDefault();
                 const rect = mapImage.getBoundingClientRect();
                 const xPixel = Math.round(e.clientX - rect.left);
                 const yPixel = Math.round(e.clientY - rect.top);
