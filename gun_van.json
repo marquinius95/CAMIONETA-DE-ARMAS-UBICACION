@@ -1,12 +1,12 @@
 {
   "date": "2026-10-30",
-  "zone": "Paleto Bay",
-  "latitude": 642,
-  "longitude": 1866,
+  "zone": "Sandy Shores",
+  "latitude": 1479,
+  "longitude": 2464,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Homing Launcher",
+    "Stun Gun",
     "Combat Shotgun"
   ]
 }
