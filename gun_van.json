@@ -1,12 +1,12 @@
 {
-  "date": "2026-10-29",
-  "zone": "Paleto Forest",
-  "latitude": 980,
-  "longitude": 1604,
+  "date": "2026-10-30",
+  "zone": "Paleto Bay",
+  "latitude": 642,
+  "longitude": 1866,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Sticky Bomb",
-    "Stun Gun"
+    "Homing Launcher",
+    "Combat Shotgun"
   ]
 }
