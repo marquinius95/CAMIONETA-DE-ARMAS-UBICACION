@@ -5,6 +5,10 @@ on:
     - cron: '0 8 * * *' # Se ejecuta todos los días a las 08:00 UTC
   workflow_dispatch: # Permite ejecutarlo a mano desde la pestaña Actions
 
+# Declaración explícita de permisos para que el bot pueda escribir en el repo
+permissions:
+  contents: write
+
 jobs:
   actualizar:
     runs-on: ubuntu-latest
