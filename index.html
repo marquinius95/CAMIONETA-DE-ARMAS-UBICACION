@@ -112,6 +112,7 @@
     <script>
         const mapImage = document.getElementById('map-image');
         const tracker = document.getElementById('pixel-tracker');
+        const container = document.getElementById('map-container');
 
         // Mostrar coordenadas exactas en tiempo real al mover el mouse sobre el mapa
         mapImage.addEventListener('mousemove', (e) => {
@@ -119,6 +120,60 @@
             const y = Math.round(e.offsetY);
             tracker.innerText = `X (Left): ${x} | Y (Top): ${y}`;
         });
+
+        // ==========================================
+        // MEJORAS PARA PC: Arrastrar con mano y Clic Derecho
+        // ==========================================
+        const esPC = window.matchMedia('(pointer: fine)').matches;
+
+        if (esPC) {
+            let estaArrastrando = false;
+            let inicioX, inicioY, scrollLeft, scrollTop;
+
+            // Cambiar cursor inicial a manito abierta
+            container.style.cursor = 'grab';
+
+            container.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return; // Solo actuar con el clic izquierdo
+                estaArrastrando = true;
+                container.style.cursor = 'grabbing';
+                inicioX = e.pageX - container.offsetLeft;
+                inicioY = e.pageY - container.offsetTop;
+                scrollLeft = container.scrollLeft;
+                scrollTop = container.scrollTop;
+            });
+
+            container.addEventListener('mouseleave', () => {
+                estaArrastrando = false;
+                container.style.cursor = 'grab';
+            });
+
+            container.addEventListener('mouseup', () => {
+                estaArrastrando = false;
+                container.style.cursor = 'grab';
+            });
+
+            container.addEventListener('mousemove', (e) => {
+                if (!estaArrastrando) return;
+                e.preventDefault();
+                const x = e.pageX - container.offsetLeft;
+                const y = e.pageY - container.offsetTop;
+                const movimientoX = x - inicioX;
+                const movimientoY = y - inicioY;
+                container.scrollLeft = scrollLeft - movimientoX;
+                container.scrollTop = scrollTop - movimientoY;
+            });
+
+            // Clic derecho para inspeccionar coordenadas de píxeles exactas
+            container.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); // Evita que se abra el menú predeterminado del navegador
+                const rect = mapImage.getBoundingClientRect();
+                const xPixel = Math.round(e.clientX - rect.left);
+                const yPixel = Math.round(e.clientY - rect.top);
+                alert(`Coordenadas del mapa:\nLeft (X): ${xPixel}\nTop (Y): ${yPixel}`);
+            });
+        }
+        // ==========================================
 
         fetch('gun_van.json?t=' + new Date().getTime())
             .then(response => response.json())
@@ -137,7 +192,6 @@
                 marker.style.display = 'block';
 
                 // Centrar automáticamente el scroll en la ubicación actual
-                const container = document.getElementById('map-container');
                 container.scrollTop = posY - (container.clientHeight / 2);
                 container.scrollLeft = posX - (container.clientWidth / 2);
             })
