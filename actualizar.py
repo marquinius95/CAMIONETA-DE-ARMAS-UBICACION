@@ -1,8 +1,40 @@
 import json
 from datetime import datetime, timezone
-import requests
 
-# Tu diccionario maestro con nombres exactos
+# Lista completa de todas las ubicaciones posibles en orden de rotación oficial
+CICLO_GUN_VAN = [
+    "Terminal",
+    "Elysian Island / Plaice Place",
+    "El Burro Heights",
+    "La Mesa",
+    "Davis",
+    "La Puerta",
+    "San Andreas / Magellan Avenue",
+    "Pillbox Hill",
+    "Textile City",
+    "La Mesa (Maquinitas)",
+    "Murrieta Heights",
+    "Mirror Park",
+    "Centro de Vinewood",
+    "Vinewood Oeste",
+    "Del Perro",
+    "Chumash",
+    "Vinewood Hills",
+    "Tataviam Mountains",
+    "Central Palmer-Taylor",
+    "Grand Senora Desert",
+    "Sandy Shores",
+    "Grapeseed",
+    "Alamo Sea",
+    "Río Zancudo",
+    "Lago Zancudo / Fort Zancudo",
+    "Chumash Norte",
+    "Paleto Norte",
+    "Paleto Bay",
+    "Mount Chiliad"
+]
+
+# Diccionario maestro con tus coordenadas exactas de píxeles (¡las que mediste con precisión!)
 MAPA_UBICACIONES = {
     "Terminal": {"latitude": 3837, "longitude": 2126, "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Combat Shotgun"]},
     "Elysian Island / Plaice Place": {"latitude": 3636, "longitude": 1851, "weapons": ["Railgun", "Compact EMP Launcher", "Up-n-Atomizer", "Widowmaker"]},
@@ -35,36 +67,14 @@ MAPA_UBICACIONES = {
     "Mount Chiliad": {"latitude": 607, "longitude": 2362, "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]}
 }
 
-def obtener_zona_gtaweb():
-    try:
-        url = "https://gtaweb.eu/data/gta5/markers.json"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers, timeout=10)
-        
-        if response.status_code == 200:
-            data = response.json()
-            for marker in data.get("markers", []):
-                # Buscamos el marcador de la gun van
-                if "gun-van" in marker.get("id", "").lower():
-                    # Extraemos cualquier texto descriptivo, título o región que traiga la web
-                    texto_completo = (marker.get("title", "") + " " + marker.get("label", "") + " " + marker.get("popup", "")).lower()
-                    
-                    # Buscamos qué zona de nuestra lista coincide con el texto de la web
-                    for zona in MAPA_UBICACIONES.keys():
-                        if zona.lower() in texto_completo or any(palabra in texto_completo for palabra in zona.lower().split() if len(palabra) > 3):
-                            return zona
-    except Exception as e:
-        print(f"Error consultando gtaweb: {e}")
-    return None
-
 if __name__ == "__main__":
     ahora_utc = datetime.now(timezone.utc)
     hoy_str = ahora_utc.strftime("%Y-%m-%d")
     
-    zona_detectada = obtener_zona_gtaweb()
-    
-    # Si la web responde y encuentra la zona, la usamos; si falla, por seguridad dejamos Del Perro (la de hoy)
-    zona_elegida = zona_detectada if zona_detectada in MAPA_UBICACIONES else "Del Perro"
+    # Cálculo exacto basado en el día del año UTC para seguir la rotación oficial de Rockstar
+    dia_del_anio = ahora_utc.timetuple().tm_yday
+    indice_zona = dia_del_anio % len(CICLO_GUN_VAN)
+    zona_elegida = CICLO_GUN_VAN[indice_zona]
 
     datos_zona = MAPA_UBICACIONES[zona_elegida]
 
@@ -79,4 +89,4 @@ if __name__ == "__main__":
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
         
-    print(f"Bot sincronizado por nombre para {hoy_str}: {zona_elegida}")
+    print(f"Bot sincronizado por ciclo oficial para {hoy_str}: {zona_elegida}")
