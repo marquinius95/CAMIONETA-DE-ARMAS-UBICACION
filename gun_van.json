@@ -1,12 +1,12 @@
 {
   "date": "2026-10-31",
-  "zone": "Sandy Shores",
-  "latitude": 1479,
-  "longitude": 2469,
+  "zone": "Del Perro",
+  "latitude": 2912,
+  "longitude": 1320,
   "weapons": [
     "Railgun",
     "Widowmaker",
-    "Homing Launcher",
-    "Sticky Bomb"
+    "Sticky Bomb",
+    "Combat Shotgun"
   ]
 }
