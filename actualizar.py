@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 from playwright.sync_api import sync_playwright
 
-# Tu diccionario maestro con coordenadas exactas de píxeles
+# Diccionario maestro completo con las 30 ubicaciones exactas y sus coordenadas de píxeles
 MAPA_UBICACIONES = {
     "Terminal": {"latitude": 3837, "longitude": 2126, "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Combat Shotgun"]},
     "Elysian Island / Plaice Place": {"latitude": 3636, "longitude": 1851, "weapons": ["Railgun", "Compact EMP Launcher", "Up-n-Atomizer", "Widowmaker"]},
@@ -23,7 +23,8 @@ MAPA_UBICACIONES = {
     "Vinewood Hills": {"latitude": 2363, "longitude": 2140, "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Up-n-Atomizer"]},
     "Tataviam Mountains": {"latitude": 2574, "longitude": 2507, "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Homing Launcher"]},
     "Central Palmer-Taylor": {"latitude": 2280, "longitude": 2757, "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]},
-    "Grand Senora Desert": {"latitude": 1857, "longitude": 2315, "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Up-n-Atomizer"]},
+    "Grand Senora Desert (1)": {"latitude": 1857, "longitude": 2315, "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Up-n-Atomizer"]},
+    "Grand Senora Desert (2)": {"latitude": 1757, "longitude": 2648, "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Combat Shotgun"]},
     "Sandy Shores": {"latitude": 1479, "longitude": 2469, "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Sticky Bomb"]},
     "Grapeseed": {"latitude": 1167, "longitude": 2440, "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Up-n-Atomizer"]},
     "Alamo Sea": {"latitude": 1575, "longitude": 2173, "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Sticky Bomb"]},
@@ -35,9 +36,31 @@ MAPA_UBICACIONES = {
     "Mount Chiliad": {"latitude": 607, "longitude": 2362, "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]}
 }
 
-def obtener_zona_con_navegador():
+def encontrar_zona_por_puntuacion(texto_web):
+    texto_web = texto_web.lower()
+    mejor_zona = None
+    max_puntuacion = 0
+    
+    for zona in MAPA_UBICACIONES.keys():
+        puntuacion = 0
+        zona_lower = zona.lower()
+        
+        if zona_lower in texto_web:
+            return zona
+            
+        palabras = [p for p in zona_lower.replace("/", " ").replace("(", "").replace(")", "").split() if len(p) > 3 and p not in ["central", "the", "and"]]
+        for palabra in palabras:
+            if palabra in texto_web:
+                puntuacion += 1
+                
+        if puntuacion > max_puntuacion:
+            max_puntuacion = puntuacion
+            mejor_zona = zona
+            
+    return mejor_zona if max_puntuacion > 0 else None
+
+def obtener_ubicacion_universal():
     with sync_playwright() as p:
-        # Lanzamos el navegador con argumentos estrictos para evitar detección de bot
         browser = p.chromium.launch(
             headless=True,
             args=[
@@ -45,82 +68,50 @@ def obtener_zona_con_navegador():
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
-                "--disable-infobars",
                 "--window-size=1920,1080"
             ]
         )
-        
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             viewport={"width": 1920, "height": 1080}
         )
-        
-        # Ocultamos la marca de automatización
         context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-        
         page = context.new_page()
-        captured_data = []
+        
+        texto_capturado = ""
         
         def handle_response(response):
-            if any(k in response.url for k in ["marker", "json", "data", "gta5"]):
+            nonlocal texto_capturado
+            if "markers.json" in response.url or "data" in response.url:
                 try:
-                    captured_data.append(response.json())
+                    data = response.json()
+                    texto_capturado += " " + str(data).lower()
                 except:
                     pass
 
         page.on("response", handle_response)
         
         try:
-            print("Conectando a gtaweb.eu con navegador protegido...")
             page.goto("https://gtaweb.eu/gta-map/s/gun-van", timeout=60000, wait_until="domcontentloaded")
-            # Damos tiempo a que renderice la interfaz y pase cualquier verificación interna
-            page.wait_for_timeout(10000)
-            
-            # Extraemos todo el texto visible en la página actual
-            page_text = page.evaluate("() => document.body.innerText").lower()
-            
-            # Verificamos si alguna zona de tu lista aparece directamente en el texto de la pantalla
-            for zona in MAPA_UBICACIONES.keys():
-                palabras = [p for p in zona.lower().split() if len(p) > 3]
-                if zona.lower() in page_text or (palabras and any(p in page_text for p in palabras)):
-                    print(f"¡Zona detectada visualmente en la web: {zona}!")
-                    browser.close()
-                    return zona
-
+            page.wait_for_timeout(9000)
+            DOM_text = page.evaluate("() => document.body.innerText").lower()
+            texto_capturado += " " + DOM_text
         except Exception as e:
-            print(f"Advertencia durante la ejecución del navegador: {e}")
-        
-        # Como respaldo secundario, escaneamos la red interceptada
-        for data in captured_data:
-            markers = []
-            if isinstance(data, dict):
-                markers = data.get("markers", data.get("data", []))
-                if not markers and "features" in data:
-                    markers = data["features"]
-            elif isinstance(data, list):
-                markers = data
-                
-            for marker in markers:
-                if isinstance(marker, dict):
-                    texto = str(marker).lower()
-                    if "gun-van" in texto or "gun van" in texto or "armas" in texto:
-                        for zona in MAPA_UBICACIONES.keys():
-                            palabras = [p for p in zona.lower().split() if len(p) > 3]
-                            if zona.lower() in texto or (palabras and any(p in texto for p in palabras)):
-                                browser.close()
-                                return zona
-                                
+            print(f"Error de red: {e}")
+            
         browser.close()
-        return None
+        
+        zona_encontrada = encontrar_zona_por_puntuacion(texto_capturado)
+        return zona_encontrada
 
 if __name__ == "__main__":
     ahora_utc = datetime.now(timezone.utc)
     hoy_str = ahora_utc.strftime("%Y-%m-%d")
     
-    zona_elegida = obtener_zona_con_navegador()
+    zona_elegida = obtener_ubicacion_universal()
     
-    if not zona_elegida:
-        raise ValueError("Error crítico: El navegador no pudo superar la protección o extraer la ubicación de gtaweb.eu.")
+    if not zona_elegida or zona_elegida not in MAPA_UBICACIONES:
+        raise ValueError("Error crítico: No se pudo determinar con certeza la zona activa de la Gun Van.")
 
     datos_zona = MAPA_UBICACIONES[zona_elegida]
 
@@ -135,4 +126,4 @@ if __name__ == "__main__":
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
         
-    print(f"¡Sincronización real exitosa mediante navegador para {hoy_str}: {zona_elegida}!")
+    print(f"¡Sistema universal sincronizado con éxito para {hoy_str}: {zona_elegida}!")
