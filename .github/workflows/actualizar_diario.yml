@@ -28,10 +28,21 @@ jobs:
 
       - name: Ejecutar script de extracción con navegador
         run: python actualizar.py
-
-      - name: Subir cambios al repositorio automáticamente
+- name: Subir cambios al repositorio automáticamente
         run: |
           git config --global user.name "Bot Gun Van Playwright"
           git config --global user.email "bot@users.noreply.github.com"
+          
+          # Mostramos el estado actual para depurar en los logs de GitHub
+          git status
+          
           git add gun_van.json
-          git diff --staged --quiet || (git commit -m "Actualización automática con navegador real de la Gun Van" && git push)
+          
+          # Verificamos si realmente hay cambios para confirmar y subir
+          if git diff --staged --quiet; then
+            echo "::notice::No hay cambios detectados en gun_van.json respecto al repositorio."
+          else
+            git commit -m "Actualización automática de la ubicación de la Gun Van"
+            git push origin HEAD
+            echo "::notice::¡Cambios subidos y actualizados con éxito!"
+          fi
