@@ -37,15 +37,32 @@ MAPA_UBICACIONES = {
 
 def obtener_zona_con_navegador():
     with sync_playwright() as p:
-        # Lanzamos un navegador Chromium en segundo plano
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
+        # Lanzamos el navegador con argumentos estrictos para evitar detección de bot
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                "--disable-blink-features=AutomationControlled",
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-infobars",
+                "--window-size=1920,1080"
+            ]
+        )
         
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            viewport={"width": 1920, "height": 1080}
+        )
+        
+        # Ocultamos la marca de automatización
+        context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        
+        page = context.new_page()
         captured_data = []
         
-        # Interceptamos las respuestas de red para capturar markers.json al vuelo
         def handle_response(response):
-            if "markers.json" in response.url:
+            if any(k in response.url for k in ["marker", "json", "data", "gta5"]):
                 try:
                     captured_data.append(response.json())
                 except:
@@ -54,23 +71,46 @@ def obtener_zona_con_navegador():
         page.on("response", handle_response)
         
         try:
-            # Entramos directamente a la sección de la Gun Van en gtaweb.eu
-            page.goto("https://gtaweb.eu/gta-map/s/gun-van", timeout=45000)
-            page.wait_for_timeout(6000) # Tiempo para que el mapa cargue y ejecute los scripts internos
+            print("Conectando a gtaweb.eu con navegador protegido...")
+            page.goto("https://gtaweb.eu/gta-map/s/gun-van", timeout=60000, wait_until="domcontentloaded")
+            # Damos tiempo a que renderice la interfaz y pase cualquier verificación interna
+            page.wait_for_timeout(10000)
+            
+            # Extraemos todo el texto visible en la página actual
+            page_text = page.evaluate("() => document.body.innerText").lower()
+            
+            # Verificamos si alguna zona de tu lista aparece directamente en el texto de la pantalla
+            for zona in MAPA_UBICACIONES.keys():
+                palabras = [p for p in zona.lower().split() if len(p) > 3]
+                if zona.lower() in page_text or (palabras and any(p in page_text for p in palabras)):
+                    print(f"¡Zona detectada visualmente en la web: {zona}!")
+                    browser.close()
+                    return zona
+
         except Exception as e:
-            print(f"Advertencia durante la navegación: {e}")
+            print(f"Advertencia durante la ejecución del navegador: {e}")
         
-        browser.close()
-        
-        # Buscamos la Gun Van en la data interceptada
+        # Como respaldo secundario, escaneamos la red interceptada
         for data in captured_data:
-            for marker in data.get("markers", []):
-                if "gun-van" in marker.get("id", "").lower():
-                    texto = (marker.get("title", "") + " " + marker.get("label", "") + " " + marker.get("popup", "") + " " + marker.get("name", "")).lower()
-                    for zona in MAPA_UBICACIONES.keys():
-                        palabras = [p for p in zona.lower().split() if len(p) > 3]
-                        if zona.lower() in texto or (palabras and any(p in texto for p in palabras)):
-                            return zona
+            markers = []
+            if isinstance(data, dict):
+                markers = data.get("markers", data.get("data", []))
+                if not markers and "features" in data:
+                    markers = data["features"]
+            elif isinstance(data, list):
+                markers = data
+                
+            for marker in markers:
+                if isinstance(marker, dict):
+                    texto = str(marker).lower()
+                    if "gun-van" in texto or "gun van" in texto or "armas" in texto:
+                        for zona in MAPA_UBICACIONES.keys():
+                            palabras = [p for p in zona.lower().split() if len(p) > 3]
+                            if zona.lower() in texto or (palabras and any(p in texto for p in palabras)):
+                                browser.close()
+                                return zona
+                                
+        browser.close()
         return None
 
 if __name__ == "__main__":
@@ -80,7 +120,7 @@ if __name__ == "__main__":
     zona_elegida = obtener_zona_con_navegador()
     
     if not zona_elegida:
-        raise ValueError("Error crítico: El navegador automatizado no pudo extraer el marcador de gtaweb.eu.")
+        raise ValueError("Error crítico: El navegador no pudo superar la protección o extraer la ubicación de gtaweb.eu.")
 
     datos_zona = MAPA_UBICACIONES[zona_elegida]
 
