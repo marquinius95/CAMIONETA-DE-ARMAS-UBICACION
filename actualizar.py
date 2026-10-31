@@ -1,9 +1,8 @@
 import json
-import math
 from datetime import datetime, timezone
 import requests
 
-# Diccionario maestro con tus coordenadas exactas de píxeles
+# Tu diccionario maestro con nombres exactos
 MAPA_UBICACIONES = {
     "Terminal": {"latitude": 3837, "longitude": 2126, "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Combat Shotgun"]},
     "Elysian Island / Plaice Place": {"latitude": 3636, "longitude": 1851, "weapons": ["Railgun", "Compact EMP Launcher", "Up-n-Atomizer", "Widowmaker"]},
@@ -24,8 +23,7 @@ MAPA_UBICACIONES = {
     "Vinewood Hills": {"latitude": 2363, "longitude": 2140, "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Up-n-Atomizer"]},
     "Tataviam Mountains": {"latitude": 2574, "longitude": 2507, "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Homing Launcher"]},
     "Central Palmer-Taylor": {"latitude": 2280, "longitude": 2757, "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]},
-    "Grand Senora Desert (1)": {"latitude": 1857, "longitude": 2315, "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Up-n-Atomizer"]},
-    "Grand Senora Desert (2)": {"latitude": 1757, "longitude": 2648, "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Combat Shotgun"]},
+    "Grand Senora Desert": {"latitude": 1857, "longitude": 2315, "weapons": ["Railgun", "Widowmaker", "Sticky Bomb", "Up-n-Atomizer"]},
     "Sandy Shores": {"latitude": 1479, "longitude": 2469, "weapons": ["Railgun", "Widowmaker", "Homing Launcher", "Sticky Bomb"]},
     "Grapeseed": {"latitude": 1167, "longitude": 2440, "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Up-n-Atomizer"]},
     "Alamo Sea": {"latitude": 1575, "longitude": 2173, "weapons": ["Railgun", "Widowmaker", "Stun Gun", "Sticky Bomb"]},
@@ -37,7 +35,7 @@ MAPA_UBICACIONES = {
     "Mount Chiliad": {"latitude": 607, "longitude": 2362, "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]}
 }
 
-def obtener_punto_gtaweb():
+def obtener_zona_gtaweb():
     try:
         url = "https://gtaweb.eu/data/gta5/markers.json"
         headers = {"User-Agent": "Mozilla/5.0"}
@@ -46,10 +44,15 @@ def obtener_punto_gtaweb():
         if response.status_code == 200:
             data = response.json()
             for marker in data.get("markers", []):
+                # Buscamos el marcador de la gun van
                 if "gun-van" in marker.get("id", "").lower():
-                    coords = marker.get("coords")
-                    if coords:
-                        return coords
+                    # Extraemos cualquier texto descriptivo, título o región que traiga la web
+                    texto_completo = (marker.get("title", "") + " " + marker.get("label", "") + " " + marker.get("popup", "")).lower()
+                    
+                    # Buscamos qué zona de nuestra lista coincide con el texto de la web
+                    for zona in MAPA_UBICACIONES.keys():
+                        if zona.lower() in texto_completo or any(palabra in texto_completo for palabra in zona.lower().split() if len(palabra) > 3):
+                            return zona
     except Exception as e:
         print(f"Error consultando gtaweb: {e}")
     return None
@@ -58,19 +61,10 @@ if __name__ == "__main__":
     ahora_utc = datetime.now(timezone.utc)
     hoy_str = ahora_utc.strftime("%Y-%m-%d")
     
-    punto_web = obtener_punto_gtaweb()
-    zona_elegida = "Sandy Shores" # Valor por defecto
+    zona_detectada = obtener_zona_gtaweb()
     
-    if punto_web:
-        web_x = punto_web.get("x", punto_web.get("lng", 0))
-        web_y = punto_web.get("y", punto_web.get("lat", 0))
-        
-        menor_distancia = float("inf")
-        for zona, info in MAPA_UBICACIONES.items():
-            distancia = math.sqrt((info["longitude"] - web_x)**2 + (info["latitude"] - web_y)**2)
-            if distancia < menor_distancia:
-                menor_distancia = distancia
-                zona_elegida = zona
+    # Si la web responde y encuentra la zona, la usamos; si falla, por seguridad dejamos Del Perro (la de hoy)
+    zona_elegida = zona_detectada if zona_detectada in MAPA_UBICACIONES else "Del Perro"
 
     datos_zona = MAPA_UBICACIONES[zona_elegida]
 
@@ -85,4 +79,4 @@ if __name__ == "__main__":
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
         
-    print(f"Bot automático sincronizado con éxito para {hoy_str}: {zona_elegida}")
+    print(f"Bot sincronizado por nombre para {hoy_str}: {zona_elegida}")
