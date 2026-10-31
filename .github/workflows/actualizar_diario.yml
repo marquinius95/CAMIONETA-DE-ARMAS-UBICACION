@@ -28,7 +28,8 @@ jobs:
 
       - name: Ejecutar script de extracción con navegador
         run: python actualizar.py
-- name: Subir cambios al repositorio automáticamente
+
+      - name: Subir cambios al repositorio automáticamente
         run: |
           git config --global user.name "Bot Gun Van Playwright"
           git config --global user.email "bot@users.noreply.github.com"
