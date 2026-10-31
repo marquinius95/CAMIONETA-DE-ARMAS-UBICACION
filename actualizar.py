@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timezone
-import cloudscraper
+from playwright.sync_api import sync_playwright
 
 # Tu diccionario maestro con coordenadas exactas de píxeles
 MAPA_UBICACIONES = {
@@ -35,37 +35,52 @@ MAPA_UBICACIONES = {
     "Mount Chiliad": {"latitude": 607, "longitude": 2362, "weapons": ["Railgun", "Widowmaker", "Compact EMP Launcher", "Sticky Bomb"]}
 }
 
-def obtener_de_gtaweb():
-    # Creamos un scraper capaz de saltar la protección de Cloudflare de gtaweb.eu
-    scraper = cloudscraper.create_scraper()
-    try:
-        url = "https://gtaweb.eu/data/gta5/markers.json"
-        response = scraper.get(url, timeout=15)
+def obtener_zona_con_navegador():
+    with sync_playwright() as p:
+        # Lanzamos un navegador Chromium en segundo plano
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
         
-        if response.status_code == 200:
-            data = response.json()
+        captured_data = []
+        
+        # Interceptamos las respuestas de red para capturar markers.json al vuelo
+        def handle_response(response):
+            if "markers.json" in response.url:
+                try:
+                    captured_data.append(response.json())
+                except:
+                    pass
+
+        page.on("response", handle_response)
+        
+        try:
+            # Entramos directamente a la sección de la Gun Van en gtaweb.eu
+            page.goto("https://gtaweb.eu/gta-map/s/gun-van", timeout=45000)
+            page.wait_for_timeout(6000) # Tiempo para que el mapa cargue y ejecute los scripts internos
+        except Exception as e:
+            print(f"Advertencia durante la navegación: {e}")
+        
+        browser.close()
+        
+        # Buscamos la Gun Van en la data interceptada
+        for data in captured_data:
             for marker in data.get("markers", []):
                 if "gun-van" in marker.get("id", "").lower():
-                    # Unificamos todo el texto posible que devuelva el marcador de la web
                     texto = (marker.get("title", "") + " " + marker.get("label", "") + " " + marker.get("popup", "") + " " + marker.get("name", "")).lower()
-                    
-                    # Buscamos qué zona de tu diccionario coincide con el texto extraído
                     for zona in MAPA_UBICACIONES.keys():
                         palabras = [p for p in zona.lower().split() if len(p) > 3]
                         if zona.lower() in texto or (palabras and any(p in texto for p in palabras)):
                             return zona
-    except Exception as e:
-        print(f"Error al conectar con gtaweb mediante cloudscraper: {e}")
-    return None
+        return None
 
 if __name__ == "__main__":
     ahora_utc = datetime.now(timezone.utc)
     hoy_str = ahora_utc.strftime("%Y-%m-%d")
     
-    zona_elegida = obtener_de_gtaweb()
+    zona_elegida = obtener_zona_con_navegador()
     
     if not zona_elegida:
-        raise ValueError("Error crítico: gtaweb.eu bloqueó la conexión o cambió su estructura. No se pudo obtener la ubicación real.")
+        raise ValueError("Error crítico: El navegador automatizado no pudo extraer el marcador de gtaweb.eu.")
 
     datos_zona = MAPA_UBICACIONES[zona_elegida]
 
@@ -80,4 +95,4 @@ if __name__ == "__main__":
     with open("gun_van.json", "w", encoding="utf-8") as f:
         json.dump(datos_nuevos, f, ensure_ascii=False, indent=2)
         
-    print(f"¡Sincronización real exitosa desde gtaweb para {hoy_str}: {zona_elegida}!")
+    print(f"¡Sincronización real exitosa mediante navegador para {hoy_str}: {zona_elegida}!")
