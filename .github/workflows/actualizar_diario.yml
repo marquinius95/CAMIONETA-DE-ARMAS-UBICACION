@@ -1,15 +1,15 @@
-name: Actualizar Gun Van Real
+name: Actualizar Gun Van con Navegador Real
 
 on:
   schedule:
-    - cron: '0 7 * * *' # Corre todos los días a las 7:00 UTC
-  workflow_dispatch: # Permite probarlo de forma manual desde la pestaña Actions
+    - cron: '0 7 * * *' # Todos los días a las 7:00 UTC
+  workflow_dispatch: # Permite la ejecución manual desde la pestaña Actions
 
 jobs:
   actualizar-datos:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Permiso obligatorio para hacer commit y push
+      contents: write # Permiso obligatorio para subir los cambios al repo
 
     steps:
       - name: Clonar el repositorio
@@ -20,15 +20,18 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Instalar herramientas necesarias (Cloudscraper)
-        run: pip install cloudscraper requests
+      - name: Instalar dependencias de Playwright
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps chromium
 
-      - name: Ejecutar script de extracción real
+      - name: Ejecutar script de extracción con navegador
         run: python actualizar.py
 
-      - name: Subir cambios al repositorio de forma automática
+      - name: Subir cambios al repositorio automáticamente
         run: |
-          git config --global user.name "Bot Gun Van Real"
+          git config --global user.name "Bot Gun Van Playwright"
           git config --global user.email "bot@users.noreply.github.com"
           git add gun_van.json
-          git diff --staged --quiet || (git commit -m "Actualización automática de la ubicación real de la Gun Van" && git push)
+          git diff --staged --quiet || (git commit -m "Actualización automática con navegador real de la Gun Van" && git push)
