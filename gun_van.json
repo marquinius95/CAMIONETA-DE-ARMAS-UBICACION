@@ -1,12 +1,12 @@
 {
   "date": "2026-10-31",
-  "zone": "Del Perro",
-  "latitude": 2912,
-  "longitude": 1320,
+  "zone": "Elysian Island / Plaice Place",
+  "latitude": 3636,
+  "longitude": 1851,
   "weapons": [
     "Railgun",
-    "Widowmaker",
-    "Sticky Bomb",
-    "Combat Shotgun"
+    "Compact EMP Launcher",
+    "Up-n-Atomizer",
+    "Widowmaker"
   ]
 }
