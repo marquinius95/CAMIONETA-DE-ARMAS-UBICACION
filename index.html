@@ -170,7 +170,7 @@
         }
         // ==========================================
 
-        fetch('gun_van.json?t=' + new Date().getTime())
+        fetch('gun_van.json?v=' + new Date().getTime() + '&cache=' + Math.random())
             .then(response => response.json())
             .then(data => {
                 document.getElementById('zone-name').innerText = data.zone;
