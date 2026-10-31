@@ -1,15 +1,15 @@
-name: Actualizar Gun Van Automática
+name: Actualizar Gun Van Real
 
 on:
   schedule:
-    - cron: '0 7 * * *' # Se ejecuta todos los días a las 7:00 UTC
-  workflow_dispatch: # Te permite darle a "Run workflow" manualmente desde la pestaña Actions para probarlo ya mismo
+    - cron: '0 7 * * *' # Corre todos los días a las 7:00 UTC
+  workflow_dispatch: # Permite probarlo de forma manual desde la pestaña Actions
 
 jobs:
   actualizar-datos:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Vital para que el bot tenga permiso de modificar el repositorio
+      contents: write # Permiso obligatorio para hacer commit y push
 
     steps:
       - name: Clonar el repositorio
@@ -20,14 +20,15 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Ejecutar script de actualización
+      - name: Instalar herramientas necesarias (Cloudscraper)
+        run: pip install cloudscraper requests
+
+      - name: Ejecutar script de extracción real
         run: python actualizar.py
 
-      - name: Configurar Git y subir cambios automáticamente
+      - name: Subir cambios al repositorio de forma automática
         run: |
-          git config --global user.name "Bot Gun Van"
+          git config --global user.name "Bot Gun Van Real"
           git config --global user.email "bot@users.noreply.github.com"
           git add gun_van.json
-          
-          # Esto evita que falle si el archivo no cambió, y hace commit y push si hay nueva data
-          git diff --staged --quiet || (git commit -m "Actualización automática de la Gun Van" && git push)
+          git diff --staged --quiet || (git commit -m "Actualización automática de la ubicación real de la Gun Van" && git push)
