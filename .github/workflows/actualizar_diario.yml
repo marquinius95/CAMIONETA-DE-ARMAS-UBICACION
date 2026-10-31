@@ -1,37 +1,33 @@
-name: Actualizar Gun Van
+name: Actualizar Gun Van Automática
 
 on:
   schedule:
-    - cron: '0 8 * * *' # Se ejecuta todos los días a las 08:00 UTC
-  workflow_dispatch: # Permite ejecutarlo a mano desde la pestaña Actions
-
-# Declaración explícita de permisos para que el bot pueda escribir en el repo
-permissions:
-  contents: write
+    - cron: '0 7 * * *' # Se ejecuta todos los días a las 7:00 UTC
+  workflow_dispatch: # Te permite darle a "Run workflow" manualmente desde la pestaña Actions para probarlo ya mismo
 
 jobs:
-  actualizar:
+  actualizar-datos:
     runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
+    permissions:
+      contents: write # Vital para que el bot tenga permiso de modificar el repositorio
 
-      - name: Configurar Python
-        uses: actions/setup-python@v4
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar entorno de Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-
-      - name: Instalar dependencias
-        run: |
-          pip install requests beautifulsoup4
 
       - name: Ejecutar script de actualización
         run: python actualizar.py
 
-      - name: Guardar cambios en el repositorio
+      - name: Configurar Git y subir cambios automáticamente
         run: |
           git config --global user.name "Bot Gun Van"
           git config --global user.email "bot@users.noreply.github.com"
           git add gun_van.json
-          git commit -m "Actualización automática Gun Van: $(date +%Y-%m-%d)" || exit 0
-          git push
+          
+          # Esto evita que falle si el archivo no cambió, y hace commit y push si hay nueva data
+          git diff --staged --quiet || (git commit -m "Actualización automática de la Gun Van" && git push)
